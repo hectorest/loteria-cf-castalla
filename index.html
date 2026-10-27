@@ -232,7 +232,7 @@ const DEFAULT_CONFIG = {
   dpdNombre: "SYMTRA CONSULTORES Y FORMACIÓN SLU", dpdEmail: "dpd@solucionlopd.net",
   fechaBorrado: "2027-01-12",
   textosRevisados: false,
-  plantilla: "Hola {nombre}, te escribimos del CF Castalla. Confirmamos tu reserva {ref}: {decimos} décimo(s) del número {numero} de la Lotería de Navidad.\n\nRecogida: {recogida}.\nEl pago se hace en efectivo al recoger.\n\nSi prefieres recogerlos en un partido concreto, dínoslo por aquí y los tendremos preparados. Si no puedes venir esos días, avísanos y te los guardamos {dias_guardado} días más. Si no se recogen ni nos avisas, los décimos se devolverán a la administración.\n\n¡Gracias por apoyar al club!"
+  plantilla: "⚽ *CF Castalla · Lotería de Navidad 2026*\n\nHola {nombre}, ¡tu reserva está confirmada! ✅\n\n🎟️ *Referencia:* {ref}\n🔢 *Número:* {numero}\n📄 *Cantidad:* {decimos_texto}\n\n📍 *Recogida:* {recogida}\n💶 *Pago:* en efectivo al recogerlos.\n\n¿Prefieres recogerlos en un partido concreto? Respóndenos a este mensaje indicando el partido y los tendremos preparados en la oficina.\n\nSi no puedes venir en esas fechas, avísanos por aquí y te los guardamos {dias_guardado} días más. Si no se recogen ni nos avisas, los décimos se devolverán a la administración.\n\n¡Gracias por apoyar al club! 💙"
 };
 const ESTADOS = [
   ["pendiente","Pendiente"],["confirmada","Confirmada"],["preparada","Preparada"],
@@ -629,11 +629,12 @@ function renderAdmin(){
 }
 
 function mensajeWA(c, r){
+  const recogida = r.partido ? "en la oficina del club, el día del partido " + r.partido : (recogidaTexto(c) || "[recogida pendiente de configurar]");
   return c.plantilla
     .replaceAll("{nombre}", (r.nombre||"").split(" ")[0])
-    .replaceAll("{ref}", r.ref).replaceAll("{decimos}", r.decimos)
+    .replaceAll("{ref}", r.ref).replaceAll("{decimos_texto}", r.decimos + (r.decimos === 1 ? " décimo" : " décimos")).replaceAll("{decimos}", r.decimos)
     .replaceAll("{numero}", c.numero)
-    .replaceAll("{recogida}", recogidaTexto(c) || "[recogida pendiente de configurar]")
+    .replaceAll("{recogida}", recogida)
     .replaceAll("{dias_guardado}", c.diasGuardado);
 }
 
@@ -750,7 +751,8 @@ function renderAjustes(c){
       ${campo("aCTel","Teléfono de contacto (público)",c.contactoTelefono,{type:"tel"})}
       ${campo("aWa","Número de WhatsApp del club",c.telefonoClub,{type:"tel",hint:"El móvil (tarjeta prepago) desde el que se envían las confirmaciones. Se muestra al público para avisar si quieren recoger en un partido concreto."})}
     </div>
-    ${campo("aPlantilla","Mensaje de confirmación por WhatsApp",c.plantilla,{type:"textarea",rows:8,hint:"Puedes usar {nombre}, {ref}, {decimos}, {numero}, {recogida} y {dias_guardado}."})}
+    ${campo("aPlantilla","Mensaje de confirmación por WhatsApp",c.plantilla,{type:"textarea",rows:14,hint:"Puedes usar {nombre}, {ref}, {numero}, {decimos_texto} (p. ej. «3 décimos»), {recogida} y {dias_guardado}. Si la reserva tiene un partido asignado, {recogida} indica ese partido. El texto entre *asteriscos* sale en negrita en WhatsApp."})}
+    <div><button type="button" class="btn sm ghost" id="aRestaurar">Restaurar el mensaje recomendado</button></div>
     </fieldset>
     <fieldset><legend>Protección de datos</legend><div class="grid2">
       ${campo("aRNombre","Nombre legal del responsable",c.respNombre)}
@@ -766,6 +768,7 @@ function renderAjustes(c){
     </fieldset>
     <div><button class="btn primary" type="submit">Guardar ajustes</button></div>
   </form>`;
+  $("#aRestaurar").onclick = ()=>{ $("#aPlantilla").value = DEFAULT_CONFIG.plantilla; toast("Mensaje restaurado. Pulsa «Guardar ajustes» para aplicarlo."); };
   $("#formAjustes").addEventListener("submit", ev => {
     ev.preventDefault();
     const v = id => $("#"+id).value.trim();
