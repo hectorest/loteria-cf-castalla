@@ -240,6 +240,7 @@ const ESTADOS = [
 ];
 const ESTADO_LBL = Object.fromEntries(ESTADOS);
 const ACTIVOS = new Set(["pendiente","confirmada","preparada","entregada"]);
+const EN_CURSO = new Set(["pendiente","confirmada","preparada"]); // cuentan para el máximo por persona: aún no entregadas
 const RELACIONES = ["Jugador/a (mayor de edad)","Familiar de jugador/a","Aficionado/a o socio/a","Otro"];
 
 /* Credenciales SOLO de la versión de prueba. En la versión real el acceso lo valida Supabase Auth en el servidor. */
@@ -268,7 +269,18 @@ const Store = {
   saveConfig(c){ load().config = Object.assign({}, load().config, c); persist(); },
   reservas(){ return load().reservas; },
   totalPorTelefono(telKey){
-    return load().reservas.filter(r => r.telKey === telKey && ACTIVOS.has(r.estado)).reduce((s,r)=>s+r.decimos,0);
+    return load().reservas.filter(r => r.telKey === telKey && EN_CURSO.has(r.estado)).reduce((s,r)=>s+r.decimos,0);
+  },
+  crearDesdePanel(input){
+    const refs = new Set(load().reservas.map(r=>r.ref));
+    let ref; do { ref = nuevaRef(); } while (refs.has(ref));
+    const now = new Date().toISOString();
+    load().reservas.push({
+      id: ref, ref, nombre: input.nombre, telefono: input.telefono, telKey: input.telKey,
+      relacion: input.relacion, decimos: input.decimos, estado: input.estado, partido: input.partido || "",
+      origen: "panel", mayorEdad: true, informado: true, creada: now, actualizada: now
+    });
+    persist(); return ref;
   },
   crear(input){
     const c = this.config();
@@ -404,7 +416,7 @@ function comoFuncionaHTML(c){
   const plazo = c.plazoTexto ? esc(c.plazoTexto) : "unos días";
   return `<section class="card"><h2>Cómo funciona</h2>
     <ol class="steps">
-      <li><div><b>Haces tu reserva aquí.</b> <span class="muted">Puedes pedir hasta ${esc(c.maxPorTelefono)} décimos por persona. Al enviar recibirás una referencia.</span></div></li>
+      <li><div><b>Haces tu reserva aquí.</b> <span class="muted">Puedes tener hasta ${esc(c.maxPorTelefono)} décimos reservados a la vez. Cuando los recojas, puedes volver a reservar. Al enviar recibirás una referencia.</span></div></li>
       <li><div><b>Te confirmamos por WhatsApp.</b> <span class="muted">La confirmación no es automática: la revisa una persona del club y puede tardar ${plazo}. La reserva no está garantizada hasta que recibas nuestro mensaje. Si pasado ese plazo no lo has recibido, llama a ${contactoHTML(c)}.</span></div></li>
       <li><div><b>Recoges y pagas en efectivo.</b> <span class="muted">Si no puedes venir en las fechas de recogida, avísanos antes y te los guardamos ${esc(c.diasGuardado)} días más. Si no se recogen ni nos avisas, los décimos se devuelven a la administración y la reserva queda anulada.</span></div></li>
     </ol></section>`;
@@ -492,7 +504,7 @@ function formHTML(c){
       <div class="stepper"><button type="button" id="menos" aria-label="Quitar un décimo">−</button>
         <input type="number" id="fCant" value="1" min="1" max="${c.maxPorTelefono}" inputmode="numeric">
         <button type="button" id="mas" aria-label="Añadir un décimo">+</button></div>
-      <div class="hint">Máximo ${esc(c.maxPorTelefono)} décimos por persona, sumando todas las reservas hechas con el mismo móvil. Si necesitas más, escríbenos ${waClubHTML(c)}.</div>
+      <div class="hint">Máximo ${esc(c.maxPorTelefono)} décimos reservados a la vez por persona (se suman las reservas con el mismo móvil que aún no has recogido). Si necesitas más, escríbenos ${waClubHTML(c)}.</div>
       <div class="err" id="eCant" hidden></div></div>
     <div class="hp" aria-hidden="true"><label for="fWeb">No rellenar</label><input type="text" id="fWeb" tabindex="-1" autocomplete="off"></div>
     ${privacidadBasicaHTML(c)}
@@ -539,7 +551,7 @@ function bindPublic(){
     if (!$("#fPriv").checked){ setErr("ePriv","Marca la casilla para confirmar que has leído la información de protección de datos."); ok=false; } else setErr("ePriv","");
     if (!ok){ f.querySelector(".err:not([hidden])")?.scrollIntoView({block:"center",behavior:"smooth"}); return; }
     const r = Store.crear({ nombre, telefono: tel.show, telKey: tel.key, relacion: relEl.value, decimos: n });
-    if (r.error === "limite"){ setErr("eForm", `Has llegado al máximo de ${c.maxPorTelefono} décimos por persona (se suman todas las reservas hechas con este móvil). Si necesitas más, escríbenos por WhatsApp ${c.telefonoClub ? "al " + c.telefonoClub : "al club"}.`); return; }
+    if (r.error === "limite"){ setErr("eForm", `Con esta reserva superarías el máximo de ${c.maxPorTelefono} décimos reservados a la vez (se suman las reservas con este móvil que aún no se han recogido). Cuando recojas las anteriores podrás volver a reservar. Si necesitas más, escríbenos por WhatsApp ${c.telefonoClub ? "al " + c.telefonoClub : "al club"}.`); return; }
     if (r.error === "cerrado"){ renderPublic(); return; }
     if (r.error){ setErr("eForm","No se ha podido guardar la reserva. Revisa los datos e inténtalo de nuevo."); return; }
     ultimaRef = r.ref; ultimaCant = n; publicStage = "hecho"; renderPublic();
@@ -555,7 +567,7 @@ function politicaHTML(c){
   <p>${P(c.respNombre)}, CIF ${P(c.respCif)}. Domicilio: ${P(c.respDireccion)}. Correo: ${P(c.respEmail)}.</p>
   <p>Delegado de Protección de Datos: ${P(c.dpdNombre)}, ${P(c.dpdEmail)}.</p>
   <h3>2. Qué datos tratamos</h3>
-  <p>Nombre y apellidos, teléfono móvil, relación con el club (jugador/a mayor de edad, familiar, aficionado/a o socio/a, otro), número de décimos, referencia, estado de la reserva y fecha. También que has declarado ser mayor de edad y haber leído esta información. No pedimos DNI, dirección, correo ni datos bancarios.</p>
+  <p>Nombre y apellidos, teléfono móvil, relación con el club (jugador/a mayor de edad, familiar, aficionado/a o socio/a, otro), número de décimos, referencia, estado de la reserva y fecha. También que has declarado ser mayor de edad y haber leído esta información. No pedimos DNI, dirección, correo ni datos bancarios. Si haces la reserva por WhatsApp o en persona, el club la registra con estos mismos datos.</p>
   <h3>3. Para qué los usamos</h3>
   <p>Exclusivamente para gestionar la reserva de décimos del número ${esc(c.numero)} de la Lotería de Navidad 2026: confirmarla, prepararla y entregártela. La relación con el club se usa solo para organizar las entregas. No enviamos publicidad ni elaboramos perfiles.</p>
   <h3>4. Base jurídica</h3>
@@ -590,7 +602,7 @@ document.addEventListener("keydown", ev => { if (ev.key === "Escape") $("#modal"
 /* ===================== Panel del club ===================== */
 let sesion = false;
 try { sesion = sessionStorage.getItem("cfc-sesion") === "1"; } catch(e){}
-let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null, editando = null;
+let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null, editando = null, anadiendo = false;
 function listaPartidos(c){ return String(c.partidos||"").split("\n").map(x=>x.trim()).filter(Boolean); }
 
 function renderLogin(){
@@ -625,7 +637,7 @@ function renderAdmin(){
     <nav class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("")}
       <button style="margin-left:auto" data-ver-form>Ver formulario público ↗</button></nav>
     <div id="tabBody" style="display:grid;gap:18px"></div></main>`;
-  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; editando=null; renderAdmin(); });
+  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; editando=null; anadiendo=false; renderAdmin(); });
   $("[data-ver-form]").onclick = ()=>{ location.hash=""; };
   if (tab==="reservas") renderReservas(c);
   else if (tab==="ajustes") renderAjustes(c);
@@ -671,7 +683,8 @@ function renderReservas(c){
     ${opcionesPartido.length ? `<div class="card" style="padding:14px 16px;gap:8px"><span class="label">Recogida por partido (reservas activas)</span>
       <ul class="checklist">${opcionesPartido.map(p=>{ const a=activos.filter(r=>r.partido===p); return `<li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(a)}</span><span>décimos · ${esc(p)} <span class="muted">(${a.length} reserva${a.length===1?"":"s"})</span></span></li>`; }).join("")}
         <li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(activos.filter(r=>!r.partido))}</span><span>décimos · recogida general <span class="muted">(${activos.filter(r=>!r.partido).length})</span></span></li></ul></div>` : ""}
-    <div class="toolbar"><input type="text" id="buscar" placeholder="Buscar por nombre, referencia o teléfono" value="${esc(busqueda)}" aria-label="Buscar">
+    ${anadiendo ? nuevaHTML(c, opcionesPartido) : ""}
+    <div class="toolbar">${anadiendo ? "" : `<button class="btn primary sm" id="btnNueva">+ Añadir reserva</button>`}<input type="text" id="buscar" placeholder="Buscar por nombre, referencia o teléfono" value="${esc(busqueda)}" aria-label="Buscar">
       ${opcionesPartido.length ? `<select id="fPartido" aria-label="Filtrar por partido" style="flex:0 1 260px;width:auto">
         <option value="todos" ${filtroPartido==="todos"?"selected":""}>Todos los partidos y recogidas</option>
         <option value="" ${filtroPartido===""?"selected":""}>Recogida general</option>
@@ -685,6 +698,23 @@ function renderReservas(c){
       `<div class="card center muted">${all.length ? "No hay reservas con ese filtro." : "Aún no hay reservas. Cuando alguien envíe el formulario aparecerá aquí."}</div>`}</div>`;
 
   body.querySelector("[data-goto]")?.addEventListener("click", ()=>{ tab="cierre"; renderAdmin(); });
+  $("#btnNueva")?.addEventListener("click", ()=>{ anadiendo = true; editando = null; renderReservas(c); $("#nNom")?.focus(); });
+  body.querySelector("[data-nueva-no]")?.addEventListener("click", ()=>{ anadiendo = false; renderReservas(c); });
+  body.querySelector("form#formNueva")?.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const nombre = $("#nNom").value.trim().replace(/\s+/g," ");
+    const tel = normTel($("#nTel").value);
+    const n = parseInt($("#nCant").value,10);
+    const err = !nombre ? "Escribe el nombre." : !tel.ok ? "Revisa el teléfono." : !(n>=1 && n<=500) ? "Indica una cantidad válida de décimos."
+      : !$("#nOk").checked ? "Confirma que la persona es mayor de edad y que se le ha informado sobre protección de datos." : "";
+    if (err){ setErr("eNueva", err); return; }
+    const ya = Store.totalPorTelefono(tel.key);
+    const ref = Store.crearDesdePanel({ nombre, telefono: tel.show, telKey: tel.key, relacion: $("#nRel").value, decimos: n,
+      estado: $("#nEst").value, partido: $("#nPar") ? $("#nPar").value : "" });
+    anadiendo = false; filtro = "todas"; filtroPartido = "todos"; busqueda = "";
+    toast("Reserva " + ref + " añadida" + (ya + n > c.maxPorTelefono ? " (supera el máximo, por excepción)" : ""));
+    renderReservas(c);
+  });
   const b = $("#buscar");
   b.addEventListener("input", ()=>{ busqueda=b.value; const pos=b.selectionStart; renderReservas(c); const nb=$("#buscar"); nb.focus(); nb.setSelectionRange(pos,pos); });
   body.querySelectorAll("[data-filtro]").forEach(x => x.onclick = ()=>{ filtro=x.dataset.filtro; renderReservas(c); });
@@ -714,7 +744,7 @@ function renderReservas(c){
 function filaHTML(c, r, porTel, opcionesPartido){
   const grupo = r.telKey ? porTel[r.telKey] : null;
   const dup = grupo && grupo.length > 1
-    ? `<div class="dup">${grupo.length} solicitudes con este teléfono · ${grupo.filter(x=>ACTIVOS.has(x.estado)).reduce((s,x)=>s+x.decimos,0)} décimos activos</div>` : "";
+    ? `<div class="dup">${grupo.length} solicitudes con este teléfono · ${grupo.filter(x=>EN_CURSO.has(x.estado)).reduce((s,x)=>s+x.decimos,0)} décimos sin entregar</div>` : "";
   const wa = r.telKey ? `https://wa.me/${encodeURIComponent(r.telKey)}?text=${encodeURIComponent(mensajeWA(c,r))}` : null;
   const sel = `<select data-estado="${esc(r.id)}" aria-label="Estado de ${esc(r.ref)}">${ESTADOS.map(([k,l])=>`<option value="${k}" ${r.estado===k?"selected":""}>${esc(l)}</option>`).join("")}</select>`
     + (opcionesPartido.length ? ` <select data-partido="${esc(r.id)}" aria-label="Partido de recogida de ${esc(r.ref)}"><option value="">Recogida general</option>${opcionesPartido.map(p=>`<option value="${esc(p)}" ${r.partido===p?"selected":""}>${esc(p)}</option>`).join("")}</select>` : "");
@@ -731,7 +761,7 @@ function filaHTML(c, r, porTel, opcionesPartido){
   return `<article class="row ${r.anon?"anon":""}">
     <div class="who">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${r.anon ? "<i>Datos personales borrados</i>" : esc(r.nombre)}</b><span class="pill st-${r.estado}">${esc(ESTADO_LBL[r.estado].replace(" a la administración",""))}</span>${r.partido?`<span class="pill" style="background:var(--sky);color:var(--navy)">⚽ ${esc(r.partido)}</span>`:""}</div>
-      <div class="meta"><span class="mono">${esc(r.ref)}</span>${r.telefono?`<span class="mono">${esc(r.telefono)}</span>`:""}<span>${esc(r.relacion)}</span><span>${esc(fechaCorta(r.creada))}</span>${r.editada?`<span>Modificada ${esc(fechaCorta(r.actualizada))}</span>`:""}</div>
+      <div class="meta"><span class="mono">${esc(r.ref)}</span>${r.telefono?`<span class="mono">${esc(r.telefono)}</span>`:""}<span>${esc(r.relacion)}</span><span>${esc(fechaCorta(r.creada))}</span>${r.origen==="panel"?`<span>Añadida desde el panel</span>`:""}${r.editada?`<span>Modificada ${esc(fechaCorta(r.actualizada))}</span>`:""}</div>
       ${dup}
     </div>
     <div class="qty">${r.decimos}<small>décimos</small></div>
@@ -740,8 +770,27 @@ function filaHTML(c, r, porTel, opcionesPartido){
   </article>`;
 }
 
+function nuevaHTML(c, opcionesPartido){
+  return `<section class="card" style="border-color:var(--blue)">
+    <h2>Añadir reserva</h2>
+    <p class="small muted">Para reservas que os piden por WhatsApp o en persona, incluidas las de más de ${esc(c.maxPorTelefono)} décimos. Desde aquí no se aplica el máximo ni la fecha límite.</p>
+    <form id="formNueva" novalidate style="display:grid;gap:12px">
+      <div class="grid2">
+        <div class="field"><label for="nNom">Nombre y apellidos</label><input type="text" id="nNom" maxlength="80"></div>
+        <div class="field"><label for="nTel">Teléfono</label><input type="tel" id="nTel" maxlength="20" inputmode="tel"></div>
+        <div class="field"><label for="nRel">Relación con el club</label><select id="nRel">${RELACIONES.map(x=>`<option>${esc(x)}</option>`).join("")}</select></div>
+        <div class="field"><label for="nCant">Décimos</label><input type="number" id="nCant" min="1" max="500" value="1"></div>
+        <div class="field"><label for="nEst">Estado</label><select id="nEst">${ESTADOS.slice(0,3).map(([k,l])=>`<option value="${k}" ${k==="confirmada"?"selected":""}>${esc(l)}</option>`).join("")}</select></div>
+        ${opcionesPartido.length ? `<div class="field"><label for="nPar">Recogida</label><select id="nPar"><option value="">Recogida general</option>${opcionesPartido.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("")}</select></div>` : ""}
+      </div>
+      <label class="check"><input type="checkbox" id="nOk"> <span>La persona es mayor de edad y se le ha informado sobre la protección de sus datos (se le puede enviar el enlace a la política de privacidad).</span></label>
+      <div class="err" id="eNueva" hidden></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" type="submit">Guardar reserva</button><button class="btn sm ghost" type="button" data-nueva-no>Cancelar</button></div>
+    </form>
+  </section>`;
+}
 function edicionHTML(c, r){
-  const otras = Store.reservas().filter(x=>x.id!==r.id && x.telKey===r.telKey && ACTIVOS.has(x.estado)).reduce((s,x)=>s+x.decimos,0);
+  const otras = Store.reservas().filter(x=>x.id!==r.id && x.telKey===r.telKey && EN_CURSO.has(x.estado)).reduce((s,x)=>s+x.decimos,0);
   const rels = RELACIONES.includes(r.relacion) ? RELACIONES : [r.relacion, ...RELACIONES];
   return `<article class="row" style="border-color:var(--blue)">
     <form data-edit-form="${esc(r.id)}" novalidate style="grid-column:1/-1;display:grid;gap:12px">
@@ -751,7 +800,7 @@ function edicionHTML(c, r){
         <div class="field"><label for="eTelE">Teléfono</label><input type="tel" id="eTelE" maxlength="20" value="${esc(r.telefono)}"></div>
         <div class="field"><label for="eRelE">Relación con el club</label><select id="eRelE">${rels.map(x=>`<option ${x===r.relacion?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
         <div class="field"><label for="eCantE">Décimos</label><input type="number" id="eCantE" min="1" max="500" value="${r.decimos}">
-          <div class="hint">Desde el panel se puede superar el máximo de ${esc(c.maxPorTelefono)} por persona (por ejemplo, si lo han pedido por WhatsApp).${otras ? ` Este teléfono tiene otros ${otras} décimos activos.` : ""}</div></div>
+          <div class="hint">Desde el panel se puede superar el máximo de ${esc(c.maxPorTelefono)} por persona (por ejemplo, si lo han pedido por WhatsApp).${otras ? ` Este teléfono tiene otros ${otras} décimos sin entregar.` : ""}</div></div>
       </div>
       <div class="err" id="eEdit" hidden></div>
       <div class="actions" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" type="submit">Guardar cambios</button><button class="btn sm ghost" type="button" data-edit-no>Cancelar</button></div>
@@ -770,7 +819,7 @@ function renderAjustes(c){
   $("#tabBody").innerHTML = `<form id="formAjustes" novalidate style="display:grid;gap:18px">
     <fieldset><legend>Campaña</legend><div class="grid2">
       ${campo("aNumero","Número de lotería",c.numero)}
-      ${campo("aMax","Máximo de décimos por persona",c.maxPorTelefono,{type:"number",min:1,max:200,hint:"Se suman todas las reservas hechas con el mismo móvil."})}
+      ${campo("aMax","Máximo de décimos por persona",c.maxPorTelefono,{type:"number",min:1,max:200,hint:"Reservados a la vez con el mismo móvil. Las reservas ya entregadas no cuentan, así que después se puede volver a reservar."})}
       ${campo("aLimite","Fecha y hora límite para reservar",c.fechaLimite,{type:"datetime-local",hint:"A esa hora el formulario se cierra solo."})}
       ${campo("aConf","Plazo de confirmación",c.plazoTexto,{ph:"Ej.: de 1 a 2 días",hint:"Se muestra al público: «la confirmación no es automática y puede tardar…»"})}
     </div></fieldset>
