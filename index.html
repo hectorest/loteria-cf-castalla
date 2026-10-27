@@ -171,6 +171,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--blue);outline:none;bo
 .st-devuelta{background:var(--danger-soft);color:var(--danger)}
 .dup{font-size:13px;color:var(--warn);font-weight:600}
 .msgbox{grid-column:1/-1;background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}
+.decbox{grid-column:1/-1;background:var(--surface-2);border-radius:10px;padding:12px;display:grid;gap:10px;overflow-x:auto}
+table.dec{border-collapse:collapse;font-size:14px;min-width:280px}
+table.dec th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;padding:4px 12px 4px 0}
+table.dec td{padding:4px 12px 4px 0;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
 fieldset{border:1px solid var(--line);border-radius:12px;padding:16px;margin:0;display:grid;gap:14px;background:var(--surface)}
 legend{font-family:var(--f-display);font-size:22px;font-weight:700;padding:0 6px}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
@@ -222,6 +226,7 @@ const DEFAULT_CONFIG = {
   recogidaDias: "", recogidaHorario: "", recogidaLugar: "",
   diasGuardado: 5,
   maxSinReserva: 3,
+  controlDecimos: false,    // opcional: registrar número, serie y fracción de cada décimo asignado
   partidos: "",             // uno por línea, para asignar reservas a un partido         // décimos que se pueden comprar sin reserva en la oficina los días de partido
   plazoTexto: "de 1 a 2 días",  // plazo orientativo de confirmación manual
   contactoNombre: "", contactoTelefono: "",
@@ -311,6 +316,25 @@ const Store = {
   partido(id, val){
     const r = load().reservas.find(x=>x.id===id); if (!r) return;
     r.partido = val || ""; r.actualizada = new Date().toISOString(); persist();
+  },
+  /* Control opcional de décimos asignados (solo panel) */
+  buscarDecimo(numero, serie, fraccion, salvoId){
+    return load().reservas.find(r => r.id !== salvoId && ACTIVOS.has(r.estado) &&
+      (r.asignados||[]).some(d => d.numero===numero && d.serie===serie && d.fraccion===fraccion)) || null;
+  },
+  asignar(id, d){
+    const r = load().reservas.find(x=>x.id===id); if (!r) return { error: "No se encuentra la reserva." };
+    if (r.estado === "entregada") return { error: "La reserva ya está entregada. Cambia su estado si necesitas corregirla." };
+    r.asignados ||= [];
+    if (r.asignados.length >= r.decimos) return { error: `Esta reserva ya tiene asignados sus ${r.decimos} décimos.` };
+    if (r.asignados.some(x => x.numero===d.numero && x.serie===d.serie && x.fraccion===d.fraccion)) return { error: "Ese décimo ya está en esta reserva." };
+    const otra = this.buscarDecimo(d.numero, d.serie, d.fraccion, id);
+    if (otra) return { error: `Ese décimo ya está asignado a la reserva ${otra.ref}${otra.nombre ? " (" + otra.nombre + ")" : ""}.` };
+    r.asignados.push(d); r.actualizada = new Date().toISOString(); persist(); return { ok: true };
+  },
+  quitarDecimo(id, i){
+    const r = load().reservas.find(x=>x.id===id); if (!r || r.estado === "entregada") return;
+    (r.asignados||[]).splice(i,1); r.actualizada = new Date().toISOString(); persist();
   },
   eliminar(id){ load().reservas = load().reservas.filter(x=>x.id!==id); persist(); },
   anonimizarTodo(){
@@ -567,7 +591,7 @@ function politicaHTML(c){
   <p>${P(c.respNombre)}, CIF ${P(c.respCif)}. Domicilio: ${P(c.respDireccion)}. Correo: ${P(c.respEmail)}.</p>
   <p>Delegado de Protección de Datos: ${P(c.dpdNombre)}, ${P(c.dpdEmail)}.</p>
   <h3>2. Qué datos tratamos</h3>
-  <p>Nombre y apellidos, teléfono móvil, relación con el club (jugador/a mayor de edad, familiar, aficionado/a o socio/a, otro), número de décimos, referencia, estado de la reserva y fecha. También que has declarado ser mayor de edad y haber leído esta información. No pedimos DNI, dirección, correo ni datos bancarios. Si haces la reserva por WhatsApp o en persona, el club la registra con estos mismos datos.</p>
+  <p>Nombre y apellidos, teléfono móvil, relación con el club (jugador/a mayor de edad, familiar, aficionado/a o socio/a, otro), número de décimos, referencia, estado de la reserva y fecha. También que has declarado ser mayor de edad y haber leído esta información. No pedimos DNI, dirección, correo ni datos bancarios. Si haces la reserva por WhatsApp o en persona, el club la registra con estos mismos datos.${c.controlDecimos ? " El club puede anotar además la serie y la fracción de los décimos que te entrega, para controlar la entrega." : ""}</p>
   <h3>3. Para qué los usamos</h3>
   <p>Exclusivamente para gestionar la reserva de décimos del número ${esc(c.numero)} de la Lotería de Navidad 2026: confirmarla, prepararla y entregártela. La relación con el club se usa solo para organizar las entregas. No enviamos publicidad ni elaboramos perfiles.</p>
   <h3>4. Base jurídica</h3>
@@ -602,7 +626,7 @@ document.addEventListener("keydown", ev => { if (ev.key === "Escape") $("#modal"
 /* ===================== Panel del club ===================== */
 let sesion = false;
 try { sesion = sessionStorage.getItem("cfc-sesion") === "1"; } catch(e){}
-let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null, editando = null, anadiendo = false;
+let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null, editando = null, anadiendo = false, decAbierto = null;
 function listaPartidos(c){ return String(c.partidos||"").split("\n").map(x=>x.trim()).filter(Boolean); }
 
 function renderLogin(){
@@ -637,7 +661,7 @@ function renderAdmin(){
     <nav class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("")}
       <button style="margin-left:auto" data-ver-form>Ver formulario público ↗</button></nav>
     <div id="tabBody" style="display:grid;gap:18px"></div></main>`;
-  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; editando=null; anadiendo=false; renderAdmin(); });
+  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; editando=null; anadiendo=false; decAbierto=null; renderAdmin(); });
   $("[data-ver-form]").onclick = ()=>{ location.hash=""; };
   if (tab==="reservas") renderReservas(c);
   else if (tab==="ajustes") renderAjustes(c);
@@ -680,6 +704,19 @@ function renderReservas(c){
       <div class="stat"><div class="k">Sin confirmar</div><div class="v">${all.filter(r=>r.estado==="pendiente").length}</div></div>
       <div class="stat"><div class="k">Décimos entregados</div><div class="v">${sum(all.filter(r=>r.estado==="entregada"))}</div></div>
     </div>
+    ${c.controlDecimos ? (()=>{ const asig = a => a.reduce((s,r)=>s+(r.asignados||[]).length,0);
+      const enc = all.filter(r=>EN_CURSO.has(r.estado)), ent = all.filter(r=>r.estado==="entregada");
+      return `<div class="card" style="padding:14px 16px;gap:10px"><span class="label">Control de décimos</span>
+        <ul class="checklist">
+          <li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(enc)}</span><span>solicitados sin entregar, de los que <b>${asig(enc)}</b> ya tienen décimo asignado</span></li>
+          <li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(ent)}</span><span>entregados, de los que <b>${asig(ent)}</b> tienen el décimo registrado</span></li>
+        </ul>
+        <form id="decBuscar" novalidate style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div class="field" style="flex:1 1 100px"><label for="bNum">Número</label><input type="text" id="bNum" inputmode="numeric" maxlength="5" value="${esc(c.numero)}"></div>
+          <div class="field" style="flex:1 1 80px"><label for="bSer">Serie</label><input type="number" id="bSer" min="1" inputmode="numeric"></div>
+          <div class="field" style="flex:1 1 80px"><label for="bFra">Fracción</label><input type="number" id="bFra" min="1" max="10" inputmode="numeric"></div>
+          <button class="btn sm ghost" type="submit" style="min-height:48px">¿De quién es?</button>
+        </form><div class="small" id="bRes" aria-live="polite"></div></div>`; })() : ""}
     ${opcionesPartido.length ? `<div class="card" style="padding:14px 16px;gap:8px"><span class="label">Recogida por partido (reservas activas)</span>
       <ul class="checklist">${opcionesPartido.map(p=>{ const a=activos.filter(r=>r.partido===p); return `<li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(a)}</span><span>décimos · ${esc(p)} <span class="muted">(${a.length} reserva${a.length===1?"":"s"})</span></span></li>`; }).join("")}
         <li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(activos.filter(r=>!r.partido))}</span><span>décimos · recogida general <span class="muted">(${activos.filter(r=>!r.partido).length})</span></span></li></ul></div>` : ""}
@@ -725,6 +762,28 @@ function renderReservas(c){
   body.querySelectorAll("[data-copy]").forEach(x => x.onclick = ()=>{ const r=all.find(y=>y.id===x.dataset.copy); copiar(mensajeWA(c,r), x); });
   body.querySelectorAll("[data-del]").forEach(x => x.onclick = ()=>{ confirmando = x.dataset.del; renderReservas(c); });
   body.querySelectorAll("[data-del-no]").forEach(x => x.onclick = ()=>{ confirmando = null; renderReservas(c); });
+  body.querySelectorAll("[data-dec]").forEach(x => x.onclick = ()=>{ decAbierto = decAbierto===x.dataset.dec ? null : x.dataset.dec; renderReservas(c); $("#dSer")?.focus(); });
+  body.querySelectorAll("[data-dec-quitar]").forEach(x => x.onclick = ()=>{ Store.quitarDecimo(x.dataset.decQuitar, +x.dataset.i); toast("Décimo quitado"); renderReservas(c); });
+  body.querySelector("form[data-dec-form]")?.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const numero = $("#dNum").value.replace(/\D/g,"").padStart(5,"0");
+    const serie = parseInt($("#dSer").value,10), fraccion = parseInt($("#dFra").value,10);
+    if (!(+numero >= 0 && numero.length===5)) return setErr("eDec","El número debe tener 5 cifras.");
+    if (!(serie >= 1)) return setErr("eDec","Indica la serie.");
+    if (!(fraccion >= 1 && fraccion <= 10)) return setErr("eDec","La fracción va del 1 al 10.");
+    const res = Store.asignar(ev.target.dataset.decForm, { numero, serie, fraccion });
+    if (res.error) return setErr("eDec", res.error);
+    toast("Décimo asignado"); renderReservas(c); $("#dSer")?.focus();
+  });
+  $("#decBuscar")?.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const numero = ($("#bNum").value.replace(/\D/g,"") || c.numero).padStart(5,"0");
+    const serie = parseInt($("#bSer").value,10), fraccion = parseInt($("#bFra").value,10);
+    const out = $("#bRes");
+    if (!(serie>=1) || !(fraccion>=1)){ out.textContent = "Indica serie y fracción."; return; }
+    const r = Store.buscarDecimo(numero, serie, fraccion, null);
+    out.innerHTML = r ? `Asignado a <b class="mono">${esc(r.ref)}</b>${r.nombre ? " · " + esc(r.nombre) : ""} · ${esc(ESTADO_LBL[r.estado])}` : "Ese décimo no está asignado a ninguna reserva activa.";
+  });
   body.querySelectorAll("[data-edit]").forEach(x => x.onclick = ()=>{ editando = x.dataset.edit; confirmando = null; abierto = null; renderReservas(c); $("#eNom")?.focus(); });
   body.querySelectorAll("[data-edit-no]").forEach(x => x.onclick = ()=>{ editando = null; renderReservas(c); });
   body.querySelector("form[data-edit-form]")?.addEventListener("submit", ev => {
@@ -733,7 +792,9 @@ function renderReservas(c){
     const nombre = $("#eNom").value.trim().replace(/\s+/g," ");
     const tel = normTel($("#eTelE").value);
     const n = parseInt($("#eCantE").value,10);
-    const err = !nombre ? "Escribe el nombre." : !tel.ok ? "Revisa el teléfono." : !(n>=1 && n<=500) ? "Indica una cantidad válida de décimos." : "";
+    const nAsig = (r.asignados||[]).length;
+    const err = !nombre ? "Escribe el nombre." : !tel.ok ? "Revisa el teléfono." : !(n>=1 && n<=500) ? "Indica una cantidad válida de décimos."
+      : n < nAsig ? `Esta reserva tiene ${nAsig} décimos asignados. Quita alguno antes de bajar la cantidad.` : "";
     if (err){ setErr("eEdit", err); return; }
     Store.editar(id, { nombre, telefono: tel.show, telKey: tel.key, relacion: $("#eRelE").value, decimos: n });
     editando = null; toast("Reserva " + r.ref + " modificada"); renderReservas(c);
@@ -756,6 +817,7 @@ function filaHTML(c, r, porTel, opcionesPartido){
     : `${sel}
        ${wa ? `<a class="btn sm wa" href="${wa}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
        <button class="btn sm ghost" data-msg="${esc(r.id)}" aria-expanded="${abierto===r.id}">${abierto===r.id?"Ocultar mensaje":"Ver mensaje"}</button>` : ""}
+       ${c.controlDecimos ? `<button class="btn sm ghost" data-dec="${esc(r.id)}" aria-expanded="${decAbierto===r.id}">Décimos asignados · ${(r.asignados||[]).length}/${r.decimos}</button>` : ""}
        ${r.anon ? "" : `<button class="btn sm ghost" data-edit="${esc(r.id)}" style="margin-left:auto">Modificar</button>`}
        <button class="btn sm ghost" data-del="${esc(r.id)}" ${r.anon ? 'style="margin-left:auto"' : ""}>Eliminar</button>`;
   return `<article class="row ${r.anon?"anon":""}">
@@ -767,9 +829,27 @@ function filaHTML(c, r, porTel, opcionesPartido){
     <div class="qty">${r.decimos}<small>décimos</small></div>
     <div class="actions">${acciones}</div>
     ${abierto===r.id && wa ? `<div class="msgbox">${esc(mensajeWA(c,r))}</div><div class="actions"><button class="btn sm ghost" data-copy="${esc(r.id)}">Copiar mensaje</button><span class="small muted">Si el botón de WhatsApp no abre la app, copia el mensaje y envíalo al <span class="mono">${esc(r.telefono)}</span> desde el móvil del club.</span></div>` : ""}
+    ${c.controlDecimos && decAbierto===r.id ? decimosHTML(c, r) : ""}
   </article>`;
 }
 
+function decimosHTML(c, r){
+  const a = r.asignados || [];
+  const bloqueado = r.estado === "entregada";
+  const lista = a.length ? `<table class="dec"><thead><tr><th>Número</th><th>Serie</th><th>Fracción</th><th></th></tr></thead><tbody>${a.map((d,i)=>`<tr><td class="mono">${esc(d.numero)}</td><td class="mono">${esc(d.serie)}</td><td class="mono">${esc(d.fraccion)}</td><td>${bloqueado?"":`<button class="btn sm ghost" data-dec-quitar="${esc(r.id)}" data-i="${i}" aria-label="Quitar décimo serie ${esc(d.serie)} fracción ${esc(d.fraccion)}">Quitar</button>`}</td></tr>`).join("")}</tbody></table>`
+    : `<p class="small muted">Aún no hay décimos asignados a esta reserva.</p>`;
+  const form = bloqueado
+    ? `<p class="small muted">La reserva está entregada, así que los décimos no se pueden cambiar. Si hay que corregir algo, cambia antes su estado.</p>`
+    : a.length >= r.decimos
+      ? `<p class="small" style="color:var(--ok);font-weight:600">Todos los décimos de esta reserva están asignados.</p>`
+      : `<form data-dec-form="${esc(r.id)}" novalidate style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+          <div class="field" style="flex:1 1 110px"><label for="dNum">Número</label><input type="text" id="dNum" inputmode="numeric" maxlength="5" value="${esc(c.numero)}"></div>
+          <div class="field" style="flex:1 1 90px"><label for="dSer">Serie</label><input type="number" id="dSer" min="1" max="999" inputmode="numeric"></div>
+          <div class="field" style="flex:1 1 90px"><label for="dFra">Fracción</label><input type="number" id="dFra" min="1" max="10" inputmode="numeric"></div>
+          <button class="btn sm primary" type="submit" style="min-height:48px">Asignar</button>
+        </form><div class="err" id="eDec" hidden></div>`;
+  return `<div class="decbox">${lista}${form}</div>`;
+}
 function nuevaHTML(c, opcionesPartido){
   return `<section class="card" style="border-color:var(--blue)">
     <h2>Añadir reserva</h2>
@@ -840,6 +920,10 @@ function renderAjustes(c){
     ${campo("aPlantilla","Mensaje de confirmación por WhatsApp",c.plantilla,{type:"textarea",rows:14,hint:"Puedes usar {nombre}, {ref}, {numero}, {decimos_texto} (p. ej. «3 décimos»), {recogida} y {dias_guardado}. Si la reserva tiene un partido asignado, {recogida} indica ese partido. El texto entre *asteriscos* sale en negrita en WhatsApp."})}
     <div><button type="button" class="btn sm ghost" id="aRestaurar">Restaurar el mensaje recomendado</button></div>
     </fieldset>
+    <fieldset><legend>Control de décimos (opcional)</legend>
+      <label class="check"><input type="checkbox" id="aCtrlDec" ${c.controlDecimos?"checked":""}> <span>Registrar el número, la serie y la fracción de los décimos asignados a cada reserva.</span></label>
+      <div class="hint">No es necesario para gestionar ni entregar reservas. Si lo desactivas, los décimos ya registrados se ocultan pero no se borran. El formulario público no cambia.</div>
+    </fieldset>
     <fieldset><legend>Protección de datos</legend><div class="grid2">
       ${campo("aRNombre","Nombre legal del responsable",c.respNombre)}
       ${campo("aRCif","CIF",c.respCif)}
@@ -871,7 +955,8 @@ function renderAjustes(c){
       plantilla: $("#aPlantilla").value,
       respNombre: v("aRNombre"), respCif: v("aRCif"), respDireccion: v("aRDir"), respEmail: v("aREmail"),
       dpdNombre: v("aDNombre"), dpdEmail: v("aDEmail"), fechaBorrado: v("aBorrado"),
-      textosRevisados: $("#aRevisado").checked
+      textosRevisados: $("#aRevisado").checked,
+      controlDecimos: $("#aCtrlDec").checked
     });
     toast("Ajustes guardados");
   });
