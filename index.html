@@ -221,6 +221,7 @@ const DEFAULT_CONFIG = {
   cierreManual: false,
   recogidaDias: "", recogidaHorario: "", recogidaLugar: "",
   diasGuardado: 5,
+  maxSinReserva: 3,         // décimos que se pueden comprar sin reserva en la oficina los días de partido
   plazoTexto: "de 1 a 2 días",  // plazo orientativo de confirmación manual
   contactoNombre: "", contactoTelefono: "",
   telefonoClub: "",         // número del WhatsApp del club (tarjeta prepago)
@@ -230,7 +231,7 @@ const DEFAULT_CONFIG = {
   dpdNombre: "SYMTRA CONSULTORES Y FORMACIÓN SLU", dpdEmail: "dpd@solucionlopd.net",
   fechaBorrado: "2027-01-12",
   textosRevisados: false,
-  plantilla: "Hola {nombre}, te escribimos del CF Castalla. Confirmamos tu reserva {ref}: {decimos} décimo(s) del número {numero} de la Lotería de Navidad.\n\nRecogida: {recogida}.\nEl pago se hace en efectivo al recoger.\n\nSi no puedes venir esos días, avísanos por aquí y te los guardamos {dias_guardado} días más. Si no se recogen ni nos avisas, los décimos se devolverán a la administración.\n\n¡Gracias por apoyar al club!"
+  plantilla: "Hola {nombre}, te escribimos del CF Castalla. Confirmamos tu reserva {ref}: {decimos} décimo(s) del número {numero} de la Lotería de Navidad.\n\nRecogida: {recogida}.\nEl pago se hace en efectivo al recoger.\n\nSi prefieres recogerlos en un partido concreto, dínoslo por aquí y los tendremos preparados. Si no puedes venir esos días, avísanos y te los guardamos {dias_guardado} días más. Si no se recogen ni nos avisas, los décimos se devolverán a la administración.\n\n¡Gracias por apoyar al club!"
 };
 const ESTADOS = [
   ["pendiente","Pendiente"],["confirmada","Confirmada"],["preparada","Preparada"],
@@ -399,6 +400,20 @@ function comoFuncionaHTML(c){
       <li><div><b>Recoges y pagas en efectivo.</b> <span class="muted">Si no puedes venir en las fechas de recogida, avísanos antes y te los guardamos ${esc(c.diasGuardado)} días más. Si no se recogen ni nos avisas, los décimos se devuelven a la administración y la reserva queda anulada.</span></div></li>
     </ol></section>`;
 }
+function waClubHTML(c){
+  return c.telefonoClub ? `por WhatsApp al <span class="mono">${esc(c.telefonoClub)}</span>` : `por WhatsApp al club ${P("", "número pendiente de configurar")}`;
+}
+function partidoHTML(c){
+  const n = esc(c.maxSinReserva);
+  return `<section class="card"><h2>Días de partido</h2>
+    <p>Los días de partido también puedes conseguir décimos en la <b>oficina del club</b>:</p>
+    <ul class="checklist">
+      <li><span class="y">✓</span><span><b>Hasta ${n} décimos:</b> sin reserva, directamente en la oficina.</span></li>
+      <li><span class="y">✓</span><span><b>Más de ${n} décimos:</b> solo con reserva previa.</span></li>
+    </ul>
+    <div class="notice info small">Si quieres recoger tu reserva en un partido concreto, dínoslo ${waClubHTML(c)} y la tendremos preparada.</div>
+  </section>`;
+}
 function privacidadBasicaHTML(c){
   return `<div class="privacy-box"><h3>Información básica sobre protección de datos</h3><dl>
     <dt>Responsable</dt><dd>${P(c.respNombre)} (CIF ${P(c.respCif)})</dd>
@@ -421,7 +436,7 @@ function renderPublic(){
     inner += `<section class="card"><h2>Reservas cerradas</h2>
       <p>El plazo para reservar décimos online ha terminado.</p>
       <div class="notice info"><b>¿Todavía quieres décimos?</b><span>Llama a ${contactoHTML(c)} y te diremos si quedan.</span></div>
-      <p class="muted small">Si ya hiciste una reserva, se mantiene. Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}.</p></section>`;
+      <p class="muted small">Si ya hiciste una reserva, se mantiene. Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}.</p></section>` + partidoHTML(c);
   } else if (publicStage === "edad"){
     inner += `<section class="card center"><h2>Antes de empezar</h2>
       <p>La lotería solo puede adquirirse por personas mayores de edad.</p>
@@ -441,9 +456,10 @@ function renderPublic(){
       <div class="notice warn" style="text-align:left"><b>Tu reserva aún no está confirmada.</b>
         <span>La confirmación no es automática: una persona del club revisará tu solicitud y te escribirá por WhatsApp${c.plazoTexto ? ", normalmente " + esc(c.plazoTexto) : ""}. Si pasado ese plazo no has recibido el mensaje, llama a ${contactoHTML(c)}.</span></div>
       <p class="muted small">Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}. Pago en efectivo.</p>
+      <p class="small">¿Prefieres recogerla en un partido concreto? Dínoslo ${waClubHTML(c)} y la tendremos preparada.</p>
       <button class="btn ghost" id="btnOtra">Hacer otra reserva</button></section>`;
   } else {
-    inner += formHTML(c) + comoFuncionaHTML(c);
+    inner += formHTML(c) + comoFuncionaHTML(c) + partidoHTML(c);
   }
   app.innerHTML = `<main class="wrap">${inner}</main>`;
   bindPublic();
@@ -705,11 +721,12 @@ function renderAjustes(c){
       ${campo("aHorario","Horario",c.recogidaHorario,{ph:"Ej.: de 10:00 a 13:00"})}
       ${campo("aLugar","Lugar",c.recogidaLugar,{ph:"Ej.: oficina del club"})}
       ${campo("aGuardado","Días que se guardan si avisan",c.diasGuardado,{type:"number",min:0,max:30})}
+      ${campo("aSinRes","Décimos sin reserva en días de partido",c.maxSinReserva,{type:"number",min:0,max:50,hint:"Hasta esta cantidad se pueden comprar en la oficina sin reservar."})}
     </div></fieldset>
     <fieldset><legend>Contacto y WhatsApp</legend><div class="grid2">
       ${campo("aCNombre","Persona de contacto",c.contactoNombre,{hint:"Se muestra al público para pedir más de "+esc(c.maxPorTelefono)+" décimos o si no llega la confirmación."})}
       ${campo("aCTel","Teléfono de contacto (público)",c.contactoTelefono,{type:"tel"})}
-      ${campo("aWa","Número de WhatsApp del club",c.telefonoClub,{type:"tel",hint:"El móvil (tarjeta prepago) desde el que se envían las confirmaciones. Solo informativo."})}
+      ${campo("aWa","Número de WhatsApp del club",c.telefonoClub,{type:"tel",hint:"El móvil (tarjeta prepago) desde el que se envían las confirmaciones. Se muestra al público para avisar si quieren recoger en un partido concreto."})}
     </div>
     ${campo("aPlantilla","Mensaje de confirmación por WhatsApp",c.plantilla,{type:"textarea",rows:8,hint:"Puedes usar {nombre}, {ref}, {decimos}, {numero}, {recogida} y {dias_guardado}."})}
     </fieldset>
@@ -737,6 +754,7 @@ function renderAjustes(c){
       fechaLimite: v("aLimite"), plazoTexto: v("aConf"),
       recogidaDias: v("aDias"), recogidaHorario: v("aHorario"), recogidaLugar: v("aLugar"),
       diasGuardado: Math.max(0, parseInt(v("aGuardado"),10) || 0),
+      maxSinReserva: Math.max(0, parseInt(v("aSinRes"),10) || 0),
       contactoNombre: v("aCNombre"), contactoTelefono: v("aCTel"), telefonoClub: v("aWa"),
       plantilla: $("#aPlantilla").value,
       respNombre: v("aRNombre"), respCif: v("aRCif"), respDireccion: v("aRDir"), respEmail: v("aREmail"),
