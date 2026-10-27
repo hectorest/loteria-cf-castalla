@@ -488,7 +488,7 @@ function formHTML(c){
       <div class="stepper"><button type="button" id="menos" aria-label="Quitar un décimo">−</button>
         <input type="number" id="fCant" value="1" min="1" max="${c.maxPorTelefono}" inputmode="numeric">
         <button type="button" id="mas" aria-label="Añadir un décimo">+</button></div>
-      <div class="hint">Máximo ${esc(c.maxPorTelefono)} décimos por persona, sumando todas las reservas hechas con el mismo móvil. Si necesitas más, llama a ${contactoHTML(c)}.</div>
+      <div class="hint">Máximo ${esc(c.maxPorTelefono)} décimos por persona, sumando todas las reservas hechas con el mismo móvil. Si necesitas más, escríbenos ${waClubHTML(c)}.</div>
       <div class="err" id="eCant" hidden></div></div>
     <div class="hp" aria-hidden="true"><label for="fWeb">No rellenar</label><input type="text" id="fWeb" tabindex="-1" autocomplete="off"></div>
     ${privacidadBasicaHTML(c)}
@@ -535,7 +535,7 @@ function bindPublic(){
     if (!$("#fPriv").checked){ setErr("ePriv","Marca la casilla para confirmar que has leído la información de protección de datos."); ok=false; } else setErr("ePriv","");
     if (!ok){ f.querySelector(".err:not([hidden])")?.scrollIntoView({block:"center",behavior:"smooth"}); return; }
     const r = Store.crear({ nombre, telefono: tel.show, telKey: tel.key, relacion: relEl.value, decimos: n });
-    if (r.error === "limite"){ setErr("eForm", `Has llegado al máximo de ${c.maxPorTelefono} décimos por persona (se suman todas las reservas hechas con este móvil). Si necesitas más, llama a ${c.contactoNombre || "el club"}${c.contactoTelefono ? " (" + c.contactoTelefono + ")" : ""}.`); return; }
+    if (r.error === "limite"){ setErr("eForm", `Has llegado al máximo de ${c.maxPorTelefono} décimos por persona (se suman todas las reservas hechas con este móvil). Si necesitas más, escríbenos por WhatsApp ${c.telefonoClub ? "al " + c.telefonoClub : "al club"}.`); return; }
     if (r.error === "cerrado"){ renderPublic(); return; }
     if (r.error){ setErr("eForm","No se ha podido guardar la reserva. Revisa los datos e inténtalo de nuevo."); return; }
     ultimaRef = r.ref; ultimaCant = n; publicStage = "hecho"; renderPublic();
@@ -747,9 +747,9 @@ function renderAjustes(c){
     ${campo("aPartidos","Partidos para recoger reservas",c.partidos,{type:"textarea",rows:5,hint:"Uno por línea, por ejemplo: «Dom 15 nov · Castalla – Rival». En cada reserva podréis elegir en qué partido se recoge."})}
     </fieldset>
     <fieldset><legend>Contacto y WhatsApp</legend><div class="grid2">
-      ${campo("aCNombre","Persona de contacto",c.contactoNombre,{hint:"Se muestra al público para pedir más de "+esc(c.maxPorTelefono)+" décimos o si no llega la confirmación."})}
+      ${campo("aCNombre","Persona de contacto",c.contactoNombre,{hint:"Se muestra al público por si no llega la confirmación o las reservas ya están cerradas."})}
       ${campo("aCTel","Teléfono de contacto (público)",c.contactoTelefono,{type:"tel"})}
-      ${campo("aWa","Número de WhatsApp del club",c.telefonoClub,{type:"tel",hint:"El móvil (tarjeta prepago) desde el que se envían las confirmaciones. Se muestra al público para avisar si quieren recoger en un partido concreto."})}
+      ${campo("aWa","Número de WhatsApp del club",c.telefonoClub,{type:"tel",hint:"El móvil (tarjeta prepago) desde el que se envían las confirmaciones. Se muestra al público para pedir más décimos del máximo o avisar del partido de recogida."})}
     </div>
     ${campo("aPlantilla","Mensaje de confirmación por WhatsApp",c.plantilla,{type:"textarea",rows:14,hint:"Puedes usar {nombre}, {ref}, {numero}, {decimos_texto} (p. ej. «3 décimos»), {recogida} y {dias_guardado}. Si la reserva tiene un partido asignado, {recogida} indica ese partido. El texto entre *asteriscos* sale en negrita en WhatsApp."})}
     <div><button type="button" class="btn sm ghost" id="aRestaurar">Restaurar el mensaje recomendado</button></div>
