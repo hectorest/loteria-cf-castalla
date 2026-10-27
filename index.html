@@ -292,6 +292,10 @@ const Store = {
     const r = load().reservas.find(x=>x.id===id); if (!r) return;
     r.estado = estado; r.actualizada = new Date().toISOString(); persist();
   },
+  editar(id, datos){
+    const r = load().reservas.find(x=>x.id===id); if (!r) return;
+    Object.assign(r, datos, { actualizada: new Date().toISOString(), editada: true }); persist();
+  },
   partido(id, val){
     const r = load().reservas.find(x=>x.id===id); if (!r) return;
     r.partido = val || ""; r.actualizada = new Date().toISOString(); persist();
@@ -586,7 +590,7 @@ document.addEventListener("keydown", ev => { if (ev.key === "Escape") $("#modal"
 /* ===================== Panel del club ===================== */
 let sesion = false;
 try { sesion = sessionStorage.getItem("cfc-sesion") === "1"; } catch(e){}
-let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null;
+let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null, editando = null;
 function listaPartidos(c){ return String(c.partidos||"").split("\n").map(x=>x.trim()).filter(Boolean); }
 
 function renderLogin(){
@@ -621,7 +625,7 @@ function renderAdmin(){
     <nav class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("")}
       <button style="margin-left:auto" data-ver-form>Ver formulario público ↗</button></nav>
     <div id="tabBody" style="display:grid;gap:18px"></div></main>`;
-  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; renderAdmin(); });
+  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; editando=null; renderAdmin(); });
   $("[data-ver-form]").onclick = ()=>{ location.hash=""; };
   if (tab==="reservas") renderReservas(c);
   else if (tab==="ajustes") renderAjustes(c);
@@ -691,6 +695,19 @@ function renderReservas(c){
   body.querySelectorAll("[data-copy]").forEach(x => x.onclick = ()=>{ const r=all.find(y=>y.id===x.dataset.copy); copiar(mensajeWA(c,r), x); });
   body.querySelectorAll("[data-del]").forEach(x => x.onclick = ()=>{ confirmando = x.dataset.del; renderReservas(c); });
   body.querySelectorAll("[data-del-no]").forEach(x => x.onclick = ()=>{ confirmando = null; renderReservas(c); });
+  body.querySelectorAll("[data-edit]").forEach(x => x.onclick = ()=>{ editando = x.dataset.edit; confirmando = null; abierto = null; renderReservas(c); $("#eNom")?.focus(); });
+  body.querySelectorAll("[data-edit-no]").forEach(x => x.onclick = ()=>{ editando = null; renderReservas(c); });
+  body.querySelector("form[data-edit-form]")?.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const f = ev.target, id = f.dataset.editForm, r = all.find(y=>y.id===id); if (!r) return;
+    const nombre = $("#eNom").value.trim().replace(/\s+/g," ");
+    const tel = normTel($("#eTelE").value);
+    const n = parseInt($("#eCantE").value,10);
+    const err = !nombre ? "Escribe el nombre." : !tel.ok ? "Revisa el teléfono." : !(n>=1 && n<=500) ? "Indica una cantidad válida de décimos." : "";
+    if (err){ setErr("eEdit", err); return; }
+    Store.editar(id, { nombre, telefono: tel.show, telKey: tel.key, relacion: $("#eRelE").value, decimos: n });
+    editando = null; toast("Reserva " + r.ref + " modificada"); renderReservas(c);
+  });
   body.querySelectorAll("[data-del-si]").forEach(x => x.onclick = ()=>{ Store.eliminar(x.dataset.delSi); confirmando=null; toast("Reserva eliminada"); renderReservas(c); });
 }
 
@@ -701,6 +718,7 @@ function filaHTML(c, r, porTel, opcionesPartido){
   const wa = r.telKey ? `https://wa.me/${encodeURIComponent(r.telKey)}?text=${encodeURIComponent(mensajeWA(c,r))}` : null;
   const sel = `<select data-estado="${esc(r.id)}" aria-label="Estado de ${esc(r.ref)}">${ESTADOS.map(([k,l])=>`<option value="${k}" ${r.estado===k?"selected":""}>${esc(l)}</option>`).join("")}</select>`
     + (opcionesPartido.length ? ` <select data-partido="${esc(r.id)}" aria-label="Partido de recogida de ${esc(r.ref)}"><option value="">Recogida general</option>${opcionesPartido.map(p=>`<option value="${esc(p)}" ${r.partido===p?"selected":""}>${esc(p)}</option>`).join("")}</select>` : "");
+  if (editando === r.id) return edicionHTML(c, r);
   const acciones = confirmando === r.id
     ? `<span class="small"><b>¿Eliminar esta reserva y sus datos?</b> No se puede deshacer.</span>
        <button class="btn sm danger" data-del-si="${esc(r.id)}">Sí, eliminar</button>
@@ -708,11 +726,12 @@ function filaHTML(c, r, porTel, opcionesPartido){
     : `${sel}
        ${wa ? `<a class="btn sm wa" href="${wa}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
        <button class="btn sm ghost" data-msg="${esc(r.id)}" aria-expanded="${abierto===r.id}">${abierto===r.id?"Ocultar mensaje":"Ver mensaje"}</button>` : ""}
-       <button class="btn sm ghost" data-del="${esc(r.id)}" style="margin-left:auto">Eliminar</button>`;
+       ${r.anon ? "" : `<button class="btn sm ghost" data-edit="${esc(r.id)}" style="margin-left:auto">Modificar</button>`}
+       <button class="btn sm ghost" data-del="${esc(r.id)}" ${r.anon ? 'style="margin-left:auto"' : ""}>Eliminar</button>`;
   return `<article class="row ${r.anon?"anon":""}">
     <div class="who">
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${r.anon ? "<i>Datos personales borrados</i>" : esc(r.nombre)}</b><span class="pill st-${r.estado}">${esc(ESTADO_LBL[r.estado].replace(" a la administración",""))}</span>${r.partido?`<span class="pill" style="background:var(--sky);color:var(--navy)">⚽ ${esc(r.partido)}</span>`:""}</div>
-      <div class="meta"><span class="mono">${esc(r.ref)}</span>${r.telefono?`<span class="mono">${esc(r.telefono)}</span>`:""}<span>${esc(r.relacion)}</span><span>${esc(fechaCorta(r.creada))}</span></div>
+      <div class="meta"><span class="mono">${esc(r.ref)}</span>${r.telefono?`<span class="mono">${esc(r.telefono)}</span>`:""}<span>${esc(r.relacion)}</span><span>${esc(fechaCorta(r.creada))}</span>${r.editada?`<span>Modificada ${esc(fechaCorta(r.actualizada))}</span>`:""}</div>
       ${dup}
     </div>
     <div class="qty">${r.decimos}<small>décimos</small></div>
@@ -721,6 +740,24 @@ function filaHTML(c, r, porTel, opcionesPartido){
   </article>`;
 }
 
+function edicionHTML(c, r){
+  const otras = Store.reservas().filter(x=>x.id!==r.id && x.telKey===r.telKey && ACTIVOS.has(x.estado)).reduce((s,x)=>s+x.decimos,0);
+  const rels = RELACIONES.includes(r.relacion) ? RELACIONES : [r.relacion, ...RELACIONES];
+  return `<article class="row" style="border-color:var(--blue)">
+    <form data-edit-form="${esc(r.id)}" novalidate style="grid-column:1/-1;display:grid;gap:12px">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Modificar reserva</b><span class="mono">${esc(r.ref)}</span></div>
+      <div class="grid2">
+        <div class="field"><label for="eNom">Nombre y apellidos</label><input type="text" id="eNom" maxlength="80" value="${esc(r.nombre)}"></div>
+        <div class="field"><label for="eTelE">Teléfono</label><input type="tel" id="eTelE" maxlength="20" value="${esc(r.telefono)}"></div>
+        <div class="field"><label for="eRelE">Relación con el club</label><select id="eRelE">${rels.map(x=>`<option ${x===r.relacion?"selected":""}>${esc(x)}</option>`).join("")}</select></div>
+        <div class="field"><label for="eCantE">Décimos</label><input type="number" id="eCantE" min="1" max="500" value="${r.decimos}">
+          <div class="hint">Desde el panel se puede superar el máximo de ${esc(c.maxPorTelefono)} por persona (por ejemplo, si lo han pedido por WhatsApp).${otras ? ` Este teléfono tiene otros ${otras} décimos activos.` : ""}</div></div>
+      </div>
+      <div class="err" id="eEdit" hidden></div>
+      <div class="actions" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm primary" type="submit">Guardar cambios</button><button class="btn sm ghost" type="button" data-edit-no>Cancelar</button></div>
+    </form>
+  </article>`;
+}
 function campo(id, label, val, opts={}){
   const type = opts.type || "text";
   const input = type==="textarea"
