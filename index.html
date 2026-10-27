@@ -221,7 +221,7 @@ const DEFAULT_CONFIG = {
   cierreManual: false,
   recogidaDias: "", recogidaHorario: "", recogidaLugar: "",
   diasGuardado: 5,
-  plazoConfirmacion: "",    // días, opcional
+  plazoTexto: "de 1 a 2 días",  // plazo orientativo de confirmación manual
   contactoNombre: "", contactoTelefono: "",
   telefonoClub: "",         // número del WhatsApp del club (tarjeta prepago)
   respNombre: "CLUB DE FUTBOL CASTALLA", respCif: "G03519550",
@@ -391,11 +391,11 @@ function contactoHTML(c){
     : P("", "contacto pendiente de configurar");
 }
 function comoFuncionaHTML(c){
-  const plazo = c.plazoConfirmacion ? ` en un plazo de ${esc(c.plazoConfirmacion)} día(s)` : "";
+  const plazo = c.plazoTexto ? esc(c.plazoTexto) : "unos días";
   return `<section class="card"><h2>Cómo funciona</h2>
     <ol class="steps">
       <li><div><b>Haces tu reserva aquí.</b> <span class="muted">Puedes pedir hasta ${esc(c.maxPorTelefono)} décimos por persona. Al enviar recibirás una referencia.</span></div></li>
-      <li><div><b>Te confirmamos por WhatsApp.</b> <span class="muted">La reserva no está garantizada hasta que recibas nuestra confirmación. Si no la recibes${plazo}, llama a ${contactoHTML(c)} para confirmarla.</span></div></li>
+      <li><div><b>Te confirmamos por WhatsApp.</b> <span class="muted">La confirmación no es automática: la revisa una persona del club y puede tardar ${plazo}. La reserva no está garantizada hasta que recibas nuestro mensaje. Si pasado ese plazo no lo has recibido, llama a ${contactoHTML(c)}.</span></div></li>
       <li><div><b>Recoges y pagas en efectivo.</b> <span class="muted">Si no puedes venir en las fechas de recogida, avísanos antes y te los guardamos ${esc(c.diasGuardado)} días más. Si no se recogen ni nos avisas, los décimos se devuelven a la administración y la reserva queda anulada.</span></div></li>
     </ol></section>`;
 }
@@ -439,7 +439,7 @@ function renderPublic(){
       <div class="ref">${esc(ultimaRef)}</div>
       <p>Guarda esta referencia. Has solicitado <b>${ultimaCant} décimo(s)</b> del número <b>${esc(c.numero)}</b>.</p>
       <div class="notice warn" style="text-align:left"><b>Tu reserva aún no está confirmada.</b>
-        <span>Te escribiremos por WhatsApp para confirmarla. Si no recibes el mensaje${c.plazoConfirmacion ? " en " + esc(c.plazoConfirmacion) + " día(s)" : ""}, llama a ${contactoHTML(c)}.</span></div>
+        <span>La confirmación no es automática: una persona del club revisará tu solicitud y te escribirá por WhatsApp${c.plazoTexto ? ", normalmente " + esc(c.plazoTexto) : ""}. Si pasado ese plazo no has recibido el mensaje, llama a ${contactoHTML(c)}.</span></div>
       <p class="muted small">Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}. Pago en efectivo.</p>
       <button class="btn ghost" id="btnOtra">Hacer otra reserva</button></section>`;
   } else {
@@ -473,7 +473,7 @@ function formHTML(c){
     ${privacidadBasicaHTML(c)}
     <label class="check"><input type="checkbox" id="fPriv"> <span>He leído la información sobre protección de datos.</span></label>
     <div class="err" id="ePriv" hidden></div>
-    <div class="notice info small">Enviar el formulario es una <b>solicitud de reserva</b>. Queda confirmada cuando te escribamos por WhatsApp.</div>
+    <div class="notice info small">Enviar el formulario es una <b>solicitud de reserva</b>. La confirmación no es automática: te escribiremos por WhatsApp${c.plazoTexto ? " " + esc(c.plazoTexto) : ""} y hasta entonces la reserva no está garantizada.</div>
     <div class="err" id="eForm" hidden></div>
     <button class="btn primary" type="submit" id="btnEnviar">Enviar solicitud</button>
   </form></section>`;
@@ -698,7 +698,7 @@ function renderAjustes(c){
       ${campo("aNumero","Número de lotería",c.numero)}
       ${campo("aMax","Máximo de décimos por persona",c.maxPorTelefono,{type:"number",min:1,max:200,hint:"Se suman todas las reservas hechas con el mismo móvil."})}
       ${campo("aLimite","Fecha y hora límite para reservar",c.fechaLimite,{type:"datetime-local",hint:"A esa hora el formulario se cierra solo."})}
-      ${campo("aConf","Días para recibir confirmación (opcional)",c.plazoConfirmacion,{type:"number",min:1,max:30,hint:"Si lo rellenas, se dice al público: «si no recibes confirmación en X días, llama a…»"})}
+      ${campo("aConf","Plazo de confirmación",c.plazoTexto,{ph:"Ej.: de 1 a 2 días",hint:"Se muestra al público: «la confirmación no es automática y puede tardar…»"})}
     </div></fieldset>
     <fieldset><legend>Recogida</legend><div class="grid2">
       ${campo("aDias","Días de recogida",c.recogidaDias,{ph:"Ej.: sábado 12 y domingo 13 de diciembre"})}
@@ -734,7 +734,7 @@ function renderAjustes(c){
     Store.saveConfig({
       numero: num || c.numero,
       maxPorTelefono: Math.max(1, parseInt(v("aMax"),10) || 20),
-      fechaLimite: v("aLimite"), plazoConfirmacion: v("aConf"),
+      fechaLimite: v("aLimite"), plazoTexto: v("aConf"),
       recogidaDias: v("aDias"), recogidaHorario: v("aHorario"), recogidaLugar: v("aLugar"),
       diasGuardado: Math.max(0, parseInt(v("aGuardado"),10) || 0),
       contactoNombre: v("aCNombre"), contactoTelefono: v("aCTel"), telefonoClub: v("aWa"),
