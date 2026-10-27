@@ -221,7 +221,8 @@ const DEFAULT_CONFIG = {
   cierreManual: false,
   recogidaDias: "", recogidaHorario: "", recogidaLugar: "",
   diasGuardado: 5,
-  maxSinReserva: 3,         // décimos que se pueden comprar sin reserva en la oficina los días de partido
+  maxSinReserva: 3,
+  partidos: "",             // uno por línea, para asignar reservas a un partido         // décimos que se pueden comprar sin reserva en la oficina los días de partido
   plazoTexto: "de 1 a 2 días",  // plazo orientativo de confirmación manual
   contactoNombre: "", contactoTelefono: "",
   telefonoClub: "",         // número del WhatsApp del club (tarjeta prepago)
@@ -290,6 +291,10 @@ const Store = {
   estado(id, estado){
     const r = load().reservas.find(x=>x.id===id); if (!r) return;
     r.estado = estado; r.actualizada = new Date().toISOString(); persist();
+  },
+  partido(id, val){
+    const r = load().reservas.find(x=>x.id===id); if (!r) return;
+    r.partido = val || ""; r.actualizada = new Date().toISOString(); persist();
   },
   eliminar(id){ load().reservas = load().reservas.filter(x=>x.id!==id); persist(); },
   anonimizarTodo(){
@@ -411,7 +416,7 @@ function partidoHTML(c){
       <li><span class="y">✓</span><span><b>Hasta ${n} décimos:</b> sin reserva, directamente en la oficina.</span></li>
       <li><span class="y">✓</span><span><b>Más de ${n} décimos:</b> solo con reserva previa.</span></li>
     </ul>
-    <div class="notice info small">Si quieres recoger tu reserva en un partido concreto, dínoslo ${waClubHTML(c)} y la tendremos preparada.</div>
+    <div class="notice info small"><b>¿Quieres recoger tu reserva en un partido concreto?</b><span>Cuando te confirmemos la reserva, dinos en qué partido ${waClubHTML(c)} y la tendremos preparada en la oficina.</span></div>
   </section>`;
 }
 function privacidadBasicaHTML(c){
@@ -456,7 +461,7 @@ function renderPublic(){
       <div class="notice warn" style="text-align:left"><b>Tu reserva aún no está confirmada.</b>
         <span>La confirmación no es automática: una persona del club revisará tu solicitud y te escribirá por WhatsApp${c.plazoTexto ? ", normalmente " + esc(c.plazoTexto) : ""}. Si pasado ese plazo no has recibido el mensaje, llama a ${contactoHTML(c)}.</span></div>
       <p class="muted small">Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}. Pago en efectivo.</p>
-      <p class="small">¿Prefieres recogerla en un partido concreto? Dínoslo ${waClubHTML(c)} y la tendremos preparada.</p>
+      <p class="small">¿Prefieres recogerla en un partido concreto? Cuando te confirmemos la reserva, dinos en qué partido ${waClubHTML(c)} y la tendremos preparada.</p>
       <button class="btn ghost" id="btnOtra">Hacer otra reserva</button></section>`;
   } else {
     inner += comoFuncionaHTML(c) + partidoHTML(c) + formHTML(c);
@@ -581,7 +586,8 @@ document.addEventListener("keydown", ev => { if (ev.key === "Escape") $("#modal"
 /* ===================== Panel del club ===================== */
 let sesion = false;
 try { sesion = sessionStorage.getItem("cfc-sesion") === "1"; } catch(e){}
-let tab = "reservas", filtro = "todas", busqueda = "", abierto = null, confirmando = null;
+let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null;
+function listaPartidos(c){ return String(c.partidos||"").split("\n").map(x=>x.trim()).filter(Boolean); }
 
 function renderLogin(){
   $("#headerAction").innerHTML = `<button class="linkbtn" id="irPublico">Ver formulario</button>`;
@@ -639,7 +645,11 @@ function renderReservas(c){
   all.forEach(r => { if (r.telKey){ (porTel[r.telKey] ||= []).push(r); } });
   const pend = pendientes(c).filter(p=>!p[1]);
   const q = busqueda.trim().toLowerCase();
+  const partidos = listaPartidos(c);
+  const enUso = [...new Set(all.map(r=>r.partido).filter(Boolean))];
+  const opcionesPartido = [...partidos, ...enUso.filter(p=>!partidos.includes(p))];
   const lista = all.filter(r => (filtro==="todas" || r.estado===filtro) &&
+      (filtroPartido==="todos" || (filtroPartido==="" ? !r.partido : r.partido===filtroPartido)) &&
       (!q || (r.nombre||"").toLowerCase().includes(q) || r.ref.toLowerCase().includes(q) || (r.telefono||"").replace(/\s/g,"").includes(q.replace(/\s/g,""))))
     .sort((a,b)=> b.creada.localeCompare(a.creada));
 
@@ -653,19 +663,28 @@ function renderReservas(c){
       <div class="stat"><div class="k">Sin confirmar</div><div class="v">${all.filter(r=>r.estado==="pendiente").length}</div></div>
       <div class="stat"><div class="k">Décimos entregados</div><div class="v">${sum(all.filter(r=>r.estado==="entregada"))}</div></div>
     </div>
-    <div class="toolbar"><input type="text" id="buscar" placeholder="Buscar por nombre, referencia o teléfono" value="${esc(busqueda)}" aria-label="Buscar"></div>
+    ${opcionesPartido.length ? `<div class="card" style="padding:14px 16px;gap:8px"><span class="label">Recogida por partido (reservas activas)</span>
+      <ul class="checklist">${opcionesPartido.map(p=>{ const a=activos.filter(r=>r.partido===p); return `<li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(a)}</span><span>décimos · ${esc(p)} <span class="muted">(${a.length} reserva${a.length===1?"":"s"})</span></span></li>`; }).join("")}
+        <li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(activos.filter(r=>!r.partido))}</span><span>décimos · recogida general <span class="muted">(${activos.filter(r=>!r.partido).length})</span></span></li></ul></div>` : ""}
+    <div class="toolbar"><input type="text" id="buscar" placeholder="Buscar por nombre, referencia o teléfono" value="${esc(busqueda)}" aria-label="Buscar">
+      ${opcionesPartido.length ? `<select id="fPartido" aria-label="Filtrar por partido" style="flex:0 1 260px;width:auto">
+        <option value="todos" ${filtroPartido==="todos"?"selected":""}>Todos los partidos y recogidas</option>
+        <option value="" ${filtroPartido===""?"selected":""}>Recogida general</option>
+        ${opcionesPartido.map(p=>`<option value="${esc(p)}" ${filtroPartido===p?"selected":""}>${esc(p)}</option>`).join("")}</select>` : ""}</div>
     <div class="filters" role="group" aria-label="Filtrar por estado">
       ${[["todas","Todas"],...ESTADOS].map(([k,l])=>{
         const n = k==="todas" ? all.length : all.filter(r=>r.estado===k).length;
         return `<button aria-pressed="${filtro===k}" data-filtro="${k}">${esc(l.replace(" a la administración",""))} · ${n}</button>`;}).join("")}
     </div>
-    <div class="rows">${lista.length ? lista.map(r => filaHTML(c, r, porTel)).join("") :
+    <div class="rows">${lista.length ? lista.map(r => filaHTML(c, r, porTel, opcionesPartido)).join("") :
       `<div class="card center muted">${all.length ? "No hay reservas con ese filtro." : "Aún no hay reservas. Cuando alguien envíe el formulario aparecerá aquí."}</div>`}</div>`;
 
   body.querySelector("[data-goto]")?.addEventListener("click", ()=>{ tab="cierre"; renderAdmin(); });
   const b = $("#buscar");
   b.addEventListener("input", ()=>{ busqueda=b.value; const pos=b.selectionStart; renderReservas(c); const nb=$("#buscar"); nb.focus(); nb.setSelectionRange(pos,pos); });
   body.querySelectorAll("[data-filtro]").forEach(x => x.onclick = ()=>{ filtro=x.dataset.filtro; renderReservas(c); });
+  $("#fPartido")?.addEventListener("change", e => { filtroPartido = e.target.value; renderReservas(c); });
+  body.querySelectorAll("select[data-partido]").forEach(s => s.onchange = ()=>{ Store.partido(s.dataset.partido, s.value); toast(s.value ? "Para recoger en: " + s.value : "Recogida general"); renderReservas(c); });
   body.querySelectorAll("select[data-estado]").forEach(s => s.onchange = ()=>{ Store.estado(s.dataset.estado, s.value); toast("Estado: " + ESTADO_LBL[s.value]); renderReservas(c); });
   body.querySelectorAll("[data-msg]").forEach(x => x.onclick = ()=>{ abierto = abierto===x.dataset.msg ? null : x.dataset.msg; renderReservas(c); });
   body.querySelectorAll("[data-copy]").forEach(x => x.onclick = ()=>{ const r=all.find(y=>y.id===x.dataset.copy); copiar(mensajeWA(c,r), x); });
@@ -674,12 +693,13 @@ function renderReservas(c){
   body.querySelectorAll("[data-del-si]").forEach(x => x.onclick = ()=>{ Store.eliminar(x.dataset.delSi); confirmando=null; toast("Reserva eliminada"); renderReservas(c); });
 }
 
-function filaHTML(c, r, porTel){
+function filaHTML(c, r, porTel, opcionesPartido){
   const grupo = r.telKey ? porTel[r.telKey] : null;
   const dup = grupo && grupo.length > 1
     ? `<div class="dup">${grupo.length} solicitudes con este teléfono · ${grupo.filter(x=>ACTIVOS.has(x.estado)).reduce((s,x)=>s+x.decimos,0)} décimos activos</div>` : "";
   const wa = r.telKey ? `https://wa.me/${encodeURIComponent(r.telKey)}?text=${encodeURIComponent(mensajeWA(c,r))}` : null;
-  const sel = `<select data-estado="${esc(r.id)}" aria-label="Estado de ${esc(r.ref)}">${ESTADOS.map(([k,l])=>`<option value="${k}" ${r.estado===k?"selected":""}>${esc(l)}</option>`).join("")}</select>`;
+  const sel = `<select data-estado="${esc(r.id)}" aria-label="Estado de ${esc(r.ref)}">${ESTADOS.map(([k,l])=>`<option value="${k}" ${r.estado===k?"selected":""}>${esc(l)}</option>`).join("")}</select>`
+    + (opcionesPartido.length ? ` <select data-partido="${esc(r.id)}" aria-label="Partido de recogida de ${esc(r.ref)}"><option value="">Recogida general</option>${opcionesPartido.map(p=>`<option value="${esc(p)}" ${r.partido===p?"selected":""}>${esc(p)}</option>`).join("")}</select>` : "");
   const acciones = confirmando === r.id
     ? `<span class="small"><b>¿Eliminar esta reserva y sus datos?</b> No se puede deshacer.</span>
        <button class="btn sm danger" data-del-si="${esc(r.id)}">Sí, eliminar</button>
@@ -690,7 +710,7 @@ function filaHTML(c, r, porTel){
        <button class="btn sm ghost" data-del="${esc(r.id)}" style="margin-left:auto">Eliminar</button>`;
   return `<article class="row ${r.anon?"anon":""}">
     <div class="who">
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${r.anon ? "<i>Datos personales borrados</i>" : esc(r.nombre)}</b><span class="pill st-${r.estado}">${esc(ESTADO_LBL[r.estado].replace(" a la administración",""))}</span></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${r.anon ? "<i>Datos personales borrados</i>" : esc(r.nombre)}</b><span class="pill st-${r.estado}">${esc(ESTADO_LBL[r.estado].replace(" a la administración",""))}</span>${r.partido?`<span class="pill" style="background:var(--sky);color:var(--navy)">⚽ ${esc(r.partido)}</span>`:""}</div>
       <div class="meta"><span class="mono">${esc(r.ref)}</span>${r.telefono?`<span class="mono">${esc(r.telefono)}</span>`:""}<span>${esc(r.relacion)}</span><span>${esc(fechaCorta(r.creada))}</span></div>
       ${dup}
     </div>
@@ -722,7 +742,9 @@ function renderAjustes(c){
       ${campo("aLugar","Lugar",c.recogidaLugar,{ph:"Ej.: oficina del club"})}
       ${campo("aGuardado","Días que se guardan si avisan",c.diasGuardado,{type:"number",min:0,max:30})}
       ${campo("aSinRes","Décimos sin reserva en días de partido",c.maxSinReserva,{type:"number",min:0,max:50,hint:"Hasta esta cantidad se pueden comprar en la oficina sin reservar."})}
-    </div></fieldset>
+    </div>
+    ${campo("aPartidos","Partidos para recoger reservas",c.partidos,{type:"textarea",rows:5,hint:"Uno por línea, por ejemplo: «Dom 15 nov · Castalla – Rival». En cada reserva podréis elegir en qué partido se recoge."})}
+    </fieldset>
     <fieldset><legend>Contacto y WhatsApp</legend><div class="grid2">
       ${campo("aCNombre","Persona de contacto",c.contactoNombre,{hint:"Se muestra al público para pedir más de "+esc(c.maxPorTelefono)+" décimos o si no llega la confirmación."})}
       ${campo("aCTel","Teléfono de contacto (público)",c.contactoTelefono,{type:"tel"})}
@@ -755,6 +777,7 @@ function renderAjustes(c){
       recogidaDias: v("aDias"), recogidaHorario: v("aHorario"), recogidaLugar: v("aLugar"),
       diasGuardado: Math.max(0, parseInt(v("aGuardado"),10) || 0),
       maxSinReserva: Math.max(0, parseInt(v("aSinRes"),10) || 0),
+      partidos: $("#aPartidos").value,
       contactoNombre: v("aCNombre"), contactoTelefono: v("aCTel"), telefonoClub: v("aWa"),
       plantilla: $("#aPlantilla").value,
       respNombre: v("aRNombre"), respCif: v("aRCif"), respDireccion: v("aRDir"), respEmail: v("aREmail"),
