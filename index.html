@@ -438,7 +438,7 @@ function renderPublic(){
       <div class="notice info"><b>¿Todavía quieres décimos?</b><span>Llama a ${contactoHTML(c)} y te diremos si quedan.</span></div>
       <p class="muted small">Si ya hiciste una reserva, se mantiene. Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}.</p></section>` + partidoHTML(c);
   } else if (publicStage === "edad"){
-    inner += `<section class="card center"><h2>Antes de empezar</h2>
+    inner += comoFuncionaHTML(c) + partidoHTML(c) + `<section class="card center"><h2>Reserva tus décimos</h2>
       <p>La lotería solo puede adquirirse por personas mayores de edad.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
         <button class="btn primary" id="btnMayor">Soy mayor de edad</button>
@@ -459,7 +459,7 @@ function renderPublic(){
       <p class="small">¿Prefieres recogerla en un partido concreto? Dínoslo ${waClubHTML(c)} y la tendremos preparada.</p>
       <button class="btn ghost" id="btnOtra">Hacer otra reserva</button></section>`;
   } else {
-    inner += formHTML(c) + comoFuncionaHTML(c) + partidoHTML(c);
+    inner += comoFuncionaHTML(c) + partidoHTML(c) + formHTML(c);
   }
   app.innerHTML = `<main class="wrap">${inner}</main>`;
   bindPublic();
@@ -503,10 +503,10 @@ function setErr(id, msg, inputId){
 
 function bindPublic(){
   const c = Store.config();
-  $("#btnMayor")?.addEventListener("click", ()=>{ publicStage="form"; renderPublic(); $("#fNombre")?.focus(); });
+  $("#btnMayor")?.addEventListener("click", ()=>{ publicStage="form"; renderPublic(); const f=$("#formReserva"); if (f){ f.closest(".card").scrollIntoView({block:"start"}); $("#fNombre").focus({preventScroll:true}); } });
   $("#btnMenor")?.addEventListener("click", ()=>{ publicStage="menor"; renderPublic(); });
   $("#btnVolver")?.addEventListener("click", ()=>{ publicStage="edad"; renderPublic(); });
-  $("#btnOtra")?.addEventListener("click", ()=>{ publicStage="form"; renderPublic(); });
+  $("#btnOtra")?.addEventListener("click", ()=>{ publicStage="form"; renderPublic(); $("#formReserva")?.closest(".card").scrollIntoView({block:"start"}); });
   const cant = $("#fCant");
   if (cant){
     const clamp = v => Math.max(1, Math.min(c.maxPorTelefono, parseInt(v,10)||1));
