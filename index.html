@@ -452,7 +452,7 @@ function comoFuncionaHTML(c){
   return `<section class="card"><h2>Cómo funciona</h2>
     <ol class="steps">
       <li><div><b>Haces tu reserva aquí.</b> <span class="muted">Puedes tener hasta ${esc(c.maxPorTelefono)} décimos reservados a la vez. Cuando los recojas, puedes volver a reservar. Al enviar recibirás una referencia.</span></div></li>
-      <li><div><b>Te confirmamos por WhatsApp.</b> <span class="muted">La confirmación no es automática: la revisa una persona del club y puede tardar ${plazo}. La reserva no está garantizada hasta que recibas nuestro mensaje. Si pasado ese plazo no lo has recibido, llama a ${contactoHTML(c)}.</span></div></li>
+      <li><div><b>Te confirmamos por WhatsApp.</b> <span class="muted">La confirmación no es automática: la revisa una persona del club y puede tardar ${plazo}. La reserva no está garantizada hasta que recibas nuestro mensaje. Si pasado ese plazo no lo has recibido, contacta con ${contactoHTML(c)}.</span></div></li>
       <li><div><b>Recoges y pagas en efectivo.</b> <span class="muted">Si no puedes venir en las fechas de recogida, avísanos antes y te los guardamos ${esc(c.diasGuardado)} días más. Si no se recogen ni nos avisas, los décimos se devuelven a la administración y la reserva queda anulada.</span></div></li>
     </ol></section>`;
 }
@@ -510,7 +510,7 @@ function renderPublic(){
       <div class="ref">${esc(ultimaRef)}</div>
       <p>Guarda esta referencia. Has solicitado <b>${ultimaCant} décimo(s)</b> del número <b>${esc(c.numero)}</b>.</p>
       <div class="notice warn" style="text-align:left"><b>Tu reserva aún no está confirmada.</b>
-        <span>La confirmación no es automática: una persona del club revisará tu solicitud y te escribirá por WhatsApp${c.plazoTexto ? ", normalmente " + esc(c.plazoTexto) : ""}. Si pasado ese plazo no has recibido el mensaje, llama a ${contactoHTML(c)}.</span></div>
+        <span>La confirmación no es automática: una persona del club revisará tu solicitud y te escribirá por WhatsApp${c.plazoTexto ? ", normalmente " + esc(c.plazoTexto) : ""}. Si pasado ese plazo no has recibido el mensaje, contacta con ${contactoHTML(c)}.</span></div>
       <p class="muted small">Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}. Pago en efectivo.</p>
       <p class="small">¿Prefieres recogerla en un partido concreto? Cuando te confirmemos la reserva, dinos en qué partido ${waClubHTML(c)} y la tendremos preparada.</p>
       <button class="btn ghost" id="btnOtra">Hacer otra reserva</button></section>`;
