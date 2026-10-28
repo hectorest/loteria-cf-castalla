@@ -1,2 +1,4 @@
+# Página privada del CF Castalla: no debe aparecer en buscadores.
+# Se permite el rastreo para que los buscadores vean la etiqueta "noindex" de la página.
 User-agent: *
-Disallow: /
+Allow: /
