@@ -492,7 +492,7 @@ function renderPublic(){
   if (!formAbierto(c)){
     inner += `<section class="card"><h2>Reservas cerradas</h2>
       <p>El plazo para reservar décimos online ha terminado.</p>
-      <div class="notice info"><b>¿Todavía quieres décimos?</b><span>Llama a ${contactoHTML(c)} y te diremos si quedan.</span></div>
+      <div class="notice info"><b>¿Todavía quieres décimos?</b><span>Contacta con ${contactoHTML(c)} y te diremos si quedan.</span></div>
       <p class="muted small">Si ya hiciste una reserva, se mantiene. Recogida: ${recogidaTexto(c) ? esc(recogidaTexto(c)) : P("")}.</p></section>` + partidoHTML(c);
   } else if (publicStage === "edad"){
     inner += comoFuncionaHTML(c) + partidoHTML(c) + `<section class="card center"><h2>Reserva tus décimos</h2>
