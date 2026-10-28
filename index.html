@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Lotería CF Castalla</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -197,7 +198,7 @@ footer .wrap{padding-block:18px;display:grid;gap:6px}
 </head>
 <body>
 
-<div class="demo-bar" role="note"><div class="wrap wide"><strong>Versión de prueba</strong><span>Las reservas se guardan solo en este navegador. No introduzcas datos reales hasta conectar la base de datos y revisar los textos legales.</span></div></div>
+<div class="demo-bar" id="demoBar" role="note" hidden><div class="wrap wide"><strong>En pruebas</strong><span>La campaña aún no ha empezado. Las reservas que se hagan ahora son de prueba y se borrarán antes de abrirla.</span></div></div>
 
 <header class="band"><div class="wrap wide">
   <div class="crest"><img src="data:image/jpeg;base64,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" alt="Escudo del CF Castalla"></div>
@@ -212,6 +213,7 @@ footer .wrap{padding-block:18px;display:grid;gap:6px}
 <div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="sheet" id="modalSheet"></div></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 (function(){
 "use strict";
@@ -248,112 +250,128 @@ const ACTIVOS = new Set(["pendiente","confirmada","preparada","entregada"]);
 const EN_CURSO = new Set(["pendiente","confirmada","preparada"]); // cuentan para el máximo por persona: aún no entregadas
 const RELACIONES = ["Jugador/a (mayor de edad)","Familiar de jugador/a","Aficionado/a o socio/a","Otro"];
 
-/* Credenciales SOLO de la versión de prueba. En la versión real el acceso lo valida Supabase Auth en el servidor. */
-const DEMO_USER = "club", DEMO_PASS = "prueba2026";
+/* ===================== Conexión con Supabase =====================
+   La clave publicable es pública por diseño: lo que puede hacer cada visitante
+   lo decide la base de datos (RLS). El público solo puede llamar a crear_reserva;
+   leer, modificar o borrar exige iniciar sesión con un usuario administrador. */
+const SUPABASE_URL = "https://emtljvkwzrzttfrvxqup.supabase.co";
+const SUPABASE_KEY = "sb_publishable_kjG_P67hTdmXZttaGUGJ3Q_S5sF3YL_";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, storageKey: "cfc-loteria-sesion" }
+});
 
-/* ===================== Almacenamiento (capa intercambiable) =====================
-   Prototipo: localStorage del navegador. En producción esta capa se sustituye por
-   llamadas a Supabase: el formulario usa una función del servidor que solo inserta,
-   y el panel lee con sesión de administrador (RLS). Las validaciones de límite y
-   cierre se repetirán en el servidor. */
-const KEY = "cfc-loteria-2026-prueba";
-let mem = null;
-function load(){
-  if (mem) return mem;
-  let d = null;
-  try { d = JSON.parse(localStorage.getItem(KEY)); } catch(e){}
-  mem = d && typeof d === "object" ? d : {};
-  mem.config = Object.assign({}, DEFAULT_CONFIG, mem.config || {});
-  mem.reservas = Array.isArray(mem.reservas) ? mem.reservas : [];
-  return mem;
+const ERRORES = {
+  cerrado: "El plazo para reservar online ha terminado.",
+  cantidad: "La cantidad de décimos no es válida.",
+  limite: "Se supera el máximo de décimos reservados a la vez para este móvil.",
+  telefono_invalido: "Revisa el teléfono: escribe un móvil español de 9 cifras o un número internacional con +.",
+  nombre_invalido: "Escribe tu nombre y al menos un apellido.",
+  relacion_invalida: "Elige tu relación con el club.",
+  falta_confirmacion: "Confirma que eres mayor de edad y que has leído la información de protección de datos.",
+  demasiadas: "Has enviado varias reservas seguidas con este móvil. Espera un rato o escríbenos por WhatsApp.",
+  ocupado: "Ahora mismo hay muchas reservas a la vez. Espera un minuto y vuelve a intentarlo.",
+  menos_que_asignados: "La reserva tiene más décimos asignados que la nueva cantidad. Quita alguno antes.",
+  reserva_entregada: "La reserva ya está entregada. Cambia antes su estado si necesitas corregir los décimos.",
+  reserva_inactiva: "La reserva está cancelada o devuelta: no se le pueden asignar décimos.",
+  todos_asignados: "Esta reserva ya tiene asignados todos sus décimos.",
+  duplicado: "Ese décimo ya está asignado a otra reserva.",
+  no_autorizado: "Tu sesión no tiene permiso para hacer esto. Vuelve a iniciar sesión.",
+  sin_permiso: "No se ha guardado: la sesión ha caducado o no tiene permiso. Vuelve a iniciar sesión.",
+  red: "No se ha podido conectar con el servidor. Revisa la conexión y vuelve a intentarlo."
+};
+function codigoError(e){
+  const m = String((e && (e.message || e.details || e.code)) || "");
+  if (/decimo_unico|duplicate key/.test(m)) return "duplicado";
+  for (const k of Object.keys(ERRORES)) if (m.includes(k)) return k;
+  if (/JWT|jwt|permission|row-level/i.test(m)) return "sin_permiso";
+  return "red";
 }
-function persist(){ try { localStorage.setItem(KEY, JSON.stringify(mem)); } catch(e){} }
+const textoError = code => ERRORES[code] || ERRORES.red;
+
+const mem = { config: Object.assign({}, DEFAULT_CONFIG), reservas: [], borradoEn: null, configOk: false, reservasOk: false };
+function mapRes(x){
+  return { id: x.id, ref: x.ref, nombre: x.nombre, telefono: x.telefono, telKey: x.tel_key, relacion: x.relacion,
+    decimos: x.decimos, estado: x.estado, partido: x.partido || "", origen: x.origen, editada: x.editada,
+    anon: x.anonimizada, creada: x.creada, actualizada: x.actualizada,
+    asignados: (x.decimos_asignados || []).map(d => ({ id: d.id, numero: d.numero, serie: d.serie, fraccion: d.fraccion }))
+      .sort((a,b) => a.numero.localeCompare(b.numero) || a.serie - b.serie || a.fraccion - b.fraccion) };
+}
 
 const Store = {
-  config(){ return load().config; },
-  saveConfig(c){ load().config = Object.assign({}, load().config, c); persist(); },
-  reservas(){ return load().reservas; },
+  config(){ return mem.config; },
+  reservas(){ return mem.reservas; },
+  borradoEn(){ return mem.borradoEn; },
   totalPorTelefono(telKey){
-    return load().reservas.filter(r => r.telKey === telKey && EN_CURSO.has(r.estado)).reduce((s,r)=>s+r.decimos,0);
+    return mem.reservas.filter(r => r.telKey === telKey && EN_CURSO.has(r.estado)).reduce((s,r)=>s+r.decimos,0);
   },
-  crearDesdePanel(input){
-    const refs = new Set(load().reservas.map(r=>r.ref));
-    let ref; do { ref = nuevaRef(); } while (refs.has(ref));
-    const now = new Date().toISOString();
-    load().reservas.push({
-      id: ref, ref, nombre: input.nombre, telefono: input.telefono, telKey: input.telKey,
-      relacion: input.relacion, decimos: input.decimos, estado: input.estado, partido: input.partido || "",
-      origen: "panel", mayorEdad: true, informado: true, creada: now, actualizada: now
-    });
-    persist(); return ref;
-  },
-  crear(input){
-    const c = this.config();
-    if (!formAbierto(c)) return { error: "cerrado" };
-    const n = parseInt(input.decimos,10);
-    if (!(n >= 1 && n <= c.maxPorTelefono)) return { error: "cantidad" };
-    const ya = this.totalPorTelefono(input.telKey);
-    if (ya + n > c.maxPorTelefono) return { error: "limite" };
-    const refs = new Set(load().reservas.map(r=>r.ref));
-    let ref; do { ref = nuevaRef(); } while (refs.has(ref));
-    const now = new Date().toISOString();
-    load().reservas.push({
-      id: ref, ref, nombre: input.nombre, telefono: input.telefono, telKey: input.telKey,
-      relacion: input.relacion, decimos: n, estado: "pendiente",
-      mayorEdad: true, privacidadLeida: true, creada: now, actualizada: now
-    });
-    persist();
-    return { ok: true, ref };
-  },
-  estado(id, estado){
-    const r = load().reservas.find(x=>x.id===id); if (!r) return;
-    r.estado = estado; r.actualizada = new Date().toISOString(); persist();
-  },
-  editar(id, datos){
-    const r = load().reservas.find(x=>x.id===id); if (!r) return;
-    Object.assign(r, datos, { actualizada: new Date().toISOString(), editada: true }); persist();
-  },
-  partido(id, val){
-    const r = load().reservas.find(x=>x.id===id); if (!r) return;
-    r.partido = val || ""; r.actualizada = new Date().toISOString(); persist();
-  },
-  /* Control opcional de décimos asignados (solo panel) */
   buscarDecimo(numero, serie, fraccion, salvoId){
-    return load().reservas.find(r => r.id !== salvoId && ACTIVOS.has(r.estado) &&
+    return mem.reservas.find(r => r.id !== salvoId && ACTIVOS.has(r.estado) &&
       (r.asignados||[]).some(d => d.numero===numero && d.serie===serie && d.fraccion===fraccion)) || null;
   },
-  asignar(id, d){
-    const r = load().reservas.find(x=>x.id===id); if (!r) return { error: "No se encuentra la reserva." };
-    if (r.estado === "entregada") return { error: "La reserva ya está entregada. Cambia su estado si necesitas corregirla." };
-    r.asignados ||= [];
-    if (r.asignados.length >= r.decimos) return { error: `Esta reserva ya tiene asignados sus ${r.decimos} décimos.` };
-    if (r.asignados.some(x => x.numero===d.numero && x.serie===d.serie && x.fraccion===d.fraccion)) return { error: "Ese décimo ya está en esta reserva." };
+  async cargarConfig(){
+    const { data, error } = await sb.from("ajustes").select("datos, borrado_en").eq("id", 1).single();
+    if (error) throw error;
+    mem.config = Object.assign({}, DEFAULT_CONFIG, data.datos || {});
+    mem.borradoEn = data.borrado_en; mem.configOk = true;
+  },
+  async cargarReservas(){
+    const { data, error } = await sb.from("reservas").select("*, decimos_asignados(id, numero, serie, fraccion)").order("creada", { ascending: false });
+    if (error) throw error;
+    mem.reservas = data.map(mapRes); mem.reservasOk = true;
+  },
+  async saveConfig(cambios){
+    const datos = Object.assign({}, mem.config, cambios);
+    const { data, error } = await sb.from("ajustes").update({ datos, actualizada: new Date().toISOString() }).eq("id", 1).select("id");
+    if (error) return { error: codigoError(error) };
+    if (!data || !data.length) return { error: "sin_permiso" };
+    mem.config = datos; return { ok: true };
+  },
+  async crear(input){
+    const { data, error } = await sb.rpc("crear_reserva", {
+      p_nombre: input.nombre, p_telefono: input.telefono, p_relacion: input.relacion,
+      p_decimos: input.decimos, p_mayor_edad: true, p_privacidad: true });
+    if (error) return { error: codigoError(error) };
+    return { ok: true, ref: data };
+  },
+  async _op(consulta){
+    const { data, error } = await consulta;
+    if (error) return { error: codigoError(error) };
+    if (Array.isArray(data) && !data.length) return { error: "sin_permiso" };
+    try { await this.cargarReservas(); } catch(e){}
+    return { ok: true, data };
+  },
+  async crearDesdePanel(input){
+    const r = await this._op(sb.from("reservas").insert({
+      nombre: input.nombre, telefono: input.telefono, relacion: input.relacion, decimos: input.decimos,
+      estado: input.estado, partido: input.partido || "", origen: "panel", mayor_edad: true, informado: true
+    }).select("ref"));
+    return r.error ? r : { ok: true, ref: r.data[0].ref };
+  },
+  estado(id, estado){ return this._op(sb.from("reservas").update({ estado }).eq("id", id).select("id")); },
+  partido(id, val){ return this._op(sb.from("reservas").update({ partido: val || "" }).eq("id", id).select("id")); },
+  editar(id, d){ return this._op(sb.from("reservas").update({ nombre: d.nombre, telefono: d.telefono, relacion: d.relacion, decimos: d.decimos, editada: true }).eq("id", id).select("id")); },
+  eliminar(id){ return this._op(sb.from("reservas").delete().eq("id", id).select("id")); },
+  async asignar(id, d){
+    const r = mem.reservas.find(x=>x.id===id); if (!r) return { error: "red" };
+    if ((r.asignados||[]).some(x => x.numero===d.numero && x.serie===d.serie && x.fraccion===d.fraccion)) return { error: "Ese décimo ya está en esta reserva.", texto: true };
     const otra = this.buscarDecimo(d.numero, d.serie, d.fraccion, id);
-    if (otra) return { error: `Ese décimo ya está asignado a la reserva ${otra.ref}${otra.nombre ? " (" + otra.nombre + ")" : ""}.` };
-    r.asignados.push(d); r.actualizada = new Date().toISOString(); persist(); return { ok: true };
+    if (otra) return { error: `Ese décimo ya está asignado a la reserva ${otra.ref}${otra.nombre ? " (" + otra.nombre + ")" : ""}.`, texto: true };
+    return this._op(sb.from("decimos_asignados").insert({ reserva_id: id, numero: d.numero, serie: d.serie, fraccion: d.fraccion }).select("id"));
   },
-  quitarDecimo(id, i){
-    const r = load().reservas.find(x=>x.id===id); if (!r || r.estado === "entregada") return;
-    (r.asignados||[]).splice(i,1); r.actualizada = new Date().toISOString(); persist();
+  quitarDecimo(asigId){ return this._op(sb.from("decimos_asignados").delete().eq("id", asigId).select("id")); },
+  async anonimizarTodo(){
+    const { error } = await sb.rpc("borrar_datos_personales");
+    if (error) return { error: codigoError(error) };
+    try { await this.cargarConfig(); await this.cargarReservas(); } catch(e){}
+    return { ok: true };
   },
-  eliminar(id){ load().reservas = load().reservas.filter(x=>x.id!==id); persist(); },
-  anonimizarTodo(){
-    load().reservas.forEach(r => { r.nombre = null; r.telefono = null; r.telKey = null; r.anon = true; });
-    load().borradoEn = new Date().toISOString(); persist();
-  },
-  borradoEn(){ return load().borradoEn || null; },
-  reiniciarPrueba(){ mem = { config: Object.assign({}, load().config), reservas: [] }; persist(); }
+  vaciarPrueba(){ return this._op(sb.from("reservas").delete().not("id", "is", null).select("id")); }
 };
 
 /* ===================== Utilidades ===================== */
 const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 const P = (v, txt="pendiente de configurar") => v ? esc(v) : `<span class="pending">${txt}</span>`;
-function nuevaRef(){
-  const A = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", b = new Uint8Array(4);
-  (window.crypto||{}).getRandomValues ? crypto.getRandomValues(b) : b.forEach((_,i)=>b[i]=Math.random()*256|0);
-  return "CFC-" + Array.from(b, x => A[x % A.length]).join("");
-}
 function normTel(raw){
   let t = String(raw||"").replace(/[\s\-().]/g,"");
   if (t.startsWith("00")) t = "+" + t.slice(2);
@@ -385,7 +403,6 @@ function recogidaTexto(c){
 }
 function pendientes(c){
   const p = [];
-  p.push(["Conectar la base de datos segura (Supabase). Ahora los datos solo están en este navegador.", false]);
   p.push(["Fecha límite de reserva", !!c.fechaLimite]);
   p.push(["Días, horario y lugar de recogida", !!(c.recogidaDias && c.recogidaHorario && c.recogidaLugar)]);
   p.push(["Persona y teléfono de contacto", !!(c.contactoNombre && c.contactoTelefono)]);
@@ -405,13 +422,7 @@ async function copiar(texto, btn){
   }
 }
 
-/* Borrado automático en la fecha configurada */
-(function autoBorrado(){
-  const c = Store.config();
-  if (!c.fechaBorrado || Store.borradoEn()) return;
-  const d = new Date(c.fechaBorrado+"T00:00:00");
-  if (!isNaN(d) && Date.now() >= d.getTime() && Store.reservas().some(r=>!r.anon)) Store.anonimizarTodo();
-})();
+/* El borrado automático lo hace el servidor cada noche (pg_cron) en la fecha configurada. */
 
 /* ===================== Vista pública ===================== */
 let publicStage = "edad"; // edad | menor | form | hecho
@@ -560,9 +571,10 @@ function bindPublic(){
     cant.addEventListener("change", ()=>{ cant.value = clamp(cant.value); });
   }
   const f = $("#formReserva");
-  if (f) f.addEventListener("submit", ev => {
+  if (f) f.addEventListener("submit", async ev => {
     ev.preventDefault();
     if ($("#fWeb").value) return; // trampa anti-robots
+    const btn = $("#btnEnviar"); if (btn.disabled) return;
     let ok = true;
     const nombre = $("#fNombre").value.trim().replace(/\s+/g," ");
     if (nombre.length < 5 || !/\s/.test(nombre)){ setErr("eNombre","Escribe tu nombre y al menos un apellido.","fNombre"); ok=false; } else setErr("eNombre","", "fNombre");
@@ -574,10 +586,13 @@ function bindPublic(){
     if (!(n>=1 && n<=c.maxPorTelefono)){ setErr("eCant",`Elige entre 1 y ${c.maxPorTelefono} décimos.`,"fCant"); ok=false; } else setErr("eCant","","fCant");
     if (!$("#fPriv").checked){ setErr("ePriv","Marca la casilla para confirmar que has leído la información de protección de datos."); ok=false; } else setErr("ePriv","");
     if (!ok){ f.querySelector(".err:not([hidden])")?.scrollIntoView({block:"center",behavior:"smooth"}); return; }
-    const r = Store.crear({ nombre, telefono: tel.show, telKey: tel.key, relacion: relEl.value, decimos: n });
+    setErr("eForm","");
+    btn.disabled = true; btn.textContent = "Enviando…";
+    const r = await Store.crear({ nombre, telefono: tel.show, relacion: relEl.value, decimos: n });
+    btn.disabled = false; btn.textContent = "Enviar solicitud";
     if (r.error === "limite"){ setErr("eForm", `Con esta reserva superarías el máximo de ${c.maxPorTelefono} décimos reservados a la vez (se suman las reservas con este móvil que aún no se han recogido). Cuando recojas las anteriores podrás volver a reservar. Si necesitas más, escríbenos por WhatsApp ${c.telefonoClub ? "al " + c.telefonoClub : "al club"}.`); return; }
-    if (r.error === "cerrado"){ renderPublic(); return; }
-    if (r.error){ setErr("eForm","No se ha podido guardar la reserva. Revisa los datos e inténtalo de nuevo."); return; }
+    if (r.error === "cerrado"){ try { await Store.cargarConfig(); } catch(e){} if (!formAbierto(Store.config())) { renderPublic(); return; } }
+    if (r.error){ setErr("eForm", textoError(r.error)); return; }
     ultimaRef = r.ref; ultimaCant = n; publicStage = "hecho"; renderPublic();
     window.scrollTo({top:0,behavior:"smooth"});
   });
@@ -601,8 +616,8 @@ function politicaHTML(c){
   <h3>6. Quién puede acceder a ellos</h3>
   <p>Solo la persona del club encargada de las reservas. No se ceden a terceros salvo obligación legal. Intervienen como proveedores técnicos:</p>
   <ul>
-    <li>Alojamiento de la página web: ${P("", "proveedor pendiente de confirmar")}.</li>
-    <li>Base de datos: Supabase, con servidores en la Unión Europea. ${P("", "condiciones pendientes de revisión")}</li>
+    <li>Alojamiento de la página web: GitHub Pages (GitHub, Inc.). La página no guarda tus datos; solo los envía a la base de datos. ${P("", "condiciones pendientes de revisión")}</li>
+    <li>Base de datos: Supabase, con servidores en la Unión Europea (París). ${P("", "condiciones pendientes de revisión")}</li>
     <li>WhatsApp (Meta), solo para enviarte el mensaje de confirmación.</li>
   </ul>
   <p>Algunos de estos proveedores pertenecen a grupos con sede en EE. UU. y podrían producirse transferencias internacionales de datos. ${P("", "Garantías aplicables pendientes de revisión por la asesoría")}</p>
@@ -624,8 +639,13 @@ document.addEventListener("click", ev => {
 document.addEventListener("keydown", ev => { if (ev.key === "Escape") $("#modal").hidden = true; });
 
 /* ===================== Panel del club ===================== */
-let sesion = false;
-try { sesion = sessionStorage.getItem("cfc-sesion") === "1"; } catch(e){}
+let sesion = false; // true solo si hay sesión iniciada Y el usuario figura como administrador
+async function comprobarAdmin(){
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return false;
+  const { data, error } = await sb.from("admins").select("user_id").eq("user_id", session.user.id);
+  return !error && data && data.length > 0;
+}
 let tab = "reservas", filtro = "todas", filtroPartido = "todos", busqueda = "", abierto = null, confirmando = null, editando = null, anadiendo = false, decAbierto = null;
 function listaPartidos(c){ return String(c.partidos||"").split("\n").map(x=>x.trim()).filter(Boolean); }
 
@@ -635,33 +655,35 @@ function renderLogin(){
   $("#app").innerHTML = `<main class="wrap"><section class="card" style="max-width:420px;width:100%;justify-self:center">
     <h2>Acceso del club</h2>
     <form id="formLogin" novalidate>
-      <div class="field"><label for="lUser">Usuario</label><input type="text" id="lUser" autocomplete="username"></div>
+      <div class="field"><label for="lUser">Correo electrónico</label><input type="email" id="lUser" autocomplete="username" inputmode="email"></div>
       <div class="field"><label for="lPass">Contraseña</label><input type="password" id="lPass" autocomplete="current-password"></div>
       <div class="err" id="eLogin" hidden></div>
-      <button class="btn primary" type="submit">Entrar</button>
+      <button class="btn primary" type="submit" id="btnLogin">Entrar</button>
     </form>
-    <div class="notice warn small"><b>Solo en la versión de prueba:</b><span>usuario <span class="mono">club</span>, contraseña <span class="mono">prueba2026</span>. En la versión real el acceso lo comprobará el servidor y la contraseña la elegiréis vosotros.</span></div>
   </section></main>`;
-  $("#formLogin").addEventListener("submit", ev => {
+  $("#formLogin").addEventListener("submit", async ev => {
     ev.preventDefault();
-    if ($("#lUser").value.trim() === DEMO_USER && $("#lPass").value === DEMO_PASS){
-      sesion = true; try { sessionStorage.setItem("cfc-sesion","1"); } catch(e){}
-      render();
-    } else setErr("eLogin","Usuario o contraseña incorrectos.");
+    const btn = $("#btnLogin"); btn.disabled = true; setErr("eLogin","");
+    const { error } = await sb.auth.signInWithPassword({ email: $("#lUser").value.trim(), password: $("#lPass").value });
+    if (error){ btn.disabled = false; setErr("eLogin", /invalid/i.test(error.message) ? "Correo o contraseña incorrectos." : textoError("red")); return; }
+    if (!(await comprobarAdmin())){ await sb.auth.signOut(); btn.disabled = false; setErr("eLogin","Esta cuenta no tiene acceso al panel del club."); return; }
+    sesion = true;
+    try { await Store.cargarReservas(); } catch(e){ toast(textoError("red")); }
+    render();
   });
 }
 
 function renderAdmin(){
   if (!sesion) return renderLogin();
   $("#headerAction").innerHTML = `<button class="linkbtn" id="salir">Cerrar sesión</button>`;
-  $("#salir").onclick = ()=>{ sesion=false; try{sessionStorage.removeItem("cfc-sesion");}catch(e){} location.hash=""; };
+  $("#salir").onclick = async ()=>{ await sb.auth.signOut(); sesion=false; mem.reservas=[]; mem.reservasOk=false; location.hash=""; };
   const c = Store.config();
   const tabs = [["reservas","Reservas"],["ajustes","Ajustes"],["cierre","Cierre y borrado"]];
   $("#app").innerHTML = `<main class="wrap wide">
     <nav class="tabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${tab===k}" data-tab="${k}">${l}</button>`).join("")}
       <button style="margin-left:auto" data-ver-form>Ver formulario público ↗</button></nav>
     <div id="tabBody" style="display:grid;gap:18px"></div></main>`;
-  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = ()=>{ tab=b.dataset.tab; abierto=null; confirmando=null; editando=null; anadiendo=false; decAbierto=null; renderAdmin(); });
+  $("#app").querySelectorAll("[data-tab]").forEach(b => b.onclick = async ()=>{ tab=b.dataset.tab; if (tab!=="ajustes"){ try { await Store.cargarReservas(); } catch(e){} } abierto=null; confirmando=null; editando=null; anadiendo=false; decAbierto=null; renderAdmin(); });
   $("[data-ver-form]").onclick = ()=>{ location.hash=""; };
   if (tab==="reservas") renderReservas(c);
   else if (tab==="ajustes") renderAjustes(c);
@@ -721,7 +743,7 @@ function renderReservas(c){
       <ul class="checklist">${opcionesPartido.map(p=>{ const a=activos.filter(r=>r.partido===p); return `<li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(a)}</span><span>décimos · ${esc(p)} <span class="muted">(${a.length} reserva${a.length===1?"":"s"})</span></span></li>`; }).join("")}
         <li><span class="mono" style="min-width:3ch;text-align:right;font-weight:700">${sum(activos.filter(r=>!r.partido))}</span><span>décimos · recogida general <span class="muted">(${activos.filter(r=>!r.partido).length})</span></span></li></ul></div>` : ""}
     ${anadiendo ? nuevaHTML(c, opcionesPartido) : ""}
-    <div class="toolbar">${anadiendo ? "" : `<button class="btn primary sm" id="btnNueva">+ Añadir reserva</button>`}<input type="text" id="buscar" placeholder="Buscar por nombre, referencia o teléfono" value="${esc(busqueda)}" aria-label="Buscar">
+    <div class="toolbar">${anadiendo ? "" : `<button class="btn primary sm" id="btnNueva">+ Añadir reserva</button>`}<button class="btn ghost sm" id="btnRecargar" title="Cargar las reservas nuevas">Actualizar</button><input type="text" id="buscar" placeholder="Buscar por nombre, referencia o teléfono" value="${esc(busqueda)}" aria-label="Buscar">
       ${opcionesPartido.length ? `<select id="fPartido" aria-label="Filtrar por partido" style="flex:0 1 260px;width:auto">
         <option value="todos" ${filtroPartido==="todos"?"selected":""}>Todos los partidos y recogidas</option>
         <option value="" ${filtroPartido===""?"selected":""}>Recogida general</option>
@@ -737,7 +759,8 @@ function renderReservas(c){
   body.querySelector("[data-goto]")?.addEventListener("click", ()=>{ tab="cierre"; renderAdmin(); });
   $("#btnNueva")?.addEventListener("click", ()=>{ anadiendo = true; editando = null; renderReservas(c); $("#nNom")?.focus(); });
   body.querySelector("[data-nueva-no]")?.addEventListener("click", ()=>{ anadiendo = false; renderReservas(c); });
-  body.querySelector("form#formNueva")?.addEventListener("submit", ev => {
+  $("#btnRecargar")?.addEventListener("click", async ()=>{ try { await Store.cargarReservas(); toast("Lista actualizada"); } catch(e){ toast(textoError("red")); } renderReservas(Store.config()); });
+  body.querySelector("form#formNueva")?.addEventListener("submit", async ev => {
     ev.preventDefault();
     const nombre = $("#nNom").value.trim().replace(/\s+/g," ");
     const tel = normTel($("#nTel").value);
@@ -746,8 +769,10 @@ function renderReservas(c){
       : !$("#nOk").checked ? "Confirma que la persona es mayor de edad y que se le ha informado sobre protección de datos." : "";
     if (err){ setErr("eNueva", err); return; }
     const ya = Store.totalPorTelefono(tel.key);
-    const ref = Store.crearDesdePanel({ nombre, telefono: tel.show, telKey: tel.key, relacion: $("#nRel").value, decimos: n,
+    const res = await Store.crearDesdePanel({ nombre, telefono: tel.show, relacion: $("#nRel").value, decimos: n,
       estado: $("#nEst").value, partido: $("#nPar") ? $("#nPar").value : "" });
+    if (res.error){ setErr("eNueva", textoError(res.error)); return; }
+    const ref = res.ref;
     anadiendo = false; filtro = "todas"; filtroPartido = "todos"; busqueda = "";
     toast("Reserva " + ref + " añadida" + (ya + n > c.maxPorTelefono ? " (supera el máximo, por excepción)" : ""));
     renderReservas(c);
@@ -756,23 +781,23 @@ function renderReservas(c){
   b.addEventListener("input", ()=>{ busqueda=b.value; const pos=b.selectionStart; renderReservas(c); const nb=$("#buscar"); nb.focus(); nb.setSelectionRange(pos,pos); });
   body.querySelectorAll("[data-filtro]").forEach(x => x.onclick = ()=>{ filtro=x.dataset.filtro; renderReservas(c); });
   $("#fPartido")?.addEventListener("change", e => { filtroPartido = e.target.value; renderReservas(c); });
-  body.querySelectorAll("select[data-partido]").forEach(s => s.onchange = ()=>{ Store.partido(s.dataset.partido, s.value); toast(s.value ? "Para recoger en: " + s.value : "Recogida general"); renderReservas(c); });
-  body.querySelectorAll("select[data-estado]").forEach(s => s.onchange = ()=>{ Store.estado(s.dataset.estado, s.value); toast("Estado: " + ESTADO_LBL[s.value]); renderReservas(c); });
+  body.querySelectorAll("select[data-partido]").forEach(s => s.onchange = async ()=>{ const res = await Store.partido(s.dataset.partido, s.value); toast(res.error ? textoError(res.error) : (s.value ? "Para recoger en: " + s.value : "Recogida general")); renderReservas(c); });
+  body.querySelectorAll("select[data-estado]").forEach(s => s.onchange = async ()=>{ const res = await Store.estado(s.dataset.estado, s.value); toast(res.error ? textoError(res.error) : "Estado: " + ESTADO_LBL[s.value]); renderReservas(c); });
   body.querySelectorAll("[data-msg]").forEach(x => x.onclick = ()=>{ abierto = abierto===x.dataset.msg ? null : x.dataset.msg; renderReservas(c); });
   body.querySelectorAll("[data-copy]").forEach(x => x.onclick = ()=>{ const r=all.find(y=>y.id===x.dataset.copy); copiar(mensajeWA(c,r), x); });
   body.querySelectorAll("[data-del]").forEach(x => x.onclick = ()=>{ confirmando = x.dataset.del; renderReservas(c); });
   body.querySelectorAll("[data-del-no]").forEach(x => x.onclick = ()=>{ confirmando = null; renderReservas(c); });
   body.querySelectorAll("[data-dec]").forEach(x => x.onclick = ()=>{ decAbierto = decAbierto===x.dataset.dec ? null : x.dataset.dec; renderReservas(c); $("#dSer")?.focus(); });
-  body.querySelectorAll("[data-dec-quitar]").forEach(x => x.onclick = ()=>{ Store.quitarDecimo(x.dataset.decQuitar, +x.dataset.i); toast("Décimo quitado"); renderReservas(c); });
-  body.querySelector("form[data-dec-form]")?.addEventListener("submit", ev => {
+  body.querySelectorAll("[data-dec-quitar]").forEach(x => x.onclick = async ()=>{ const res = await Store.quitarDecimo(+x.dataset.aid); toast(res.error ? textoError(res.error) : "Décimo quitado"); renderReservas(c); });
+  body.querySelector("form[data-dec-form]")?.addEventListener("submit", async ev => {
     ev.preventDefault();
     const numero = $("#dNum").value.replace(/\D/g,"").padStart(5,"0");
     const serie = parseInt($("#dSer").value,10), fraccion = parseInt($("#dFra").value,10);
     if (!(+numero >= 0 && numero.length===5)) return setErr("eDec","El número debe tener 5 cifras.");
     if (!(serie >= 1)) return setErr("eDec","Indica la serie.");
     if (!(fraccion >= 1 && fraccion <= 10)) return setErr("eDec","La fracción va del 1 al 10.");
-    const res = Store.asignar(ev.target.dataset.decForm, { numero, serie, fraccion });
-    if (res.error) return setErr("eDec", res.error);
+    const res = await Store.asignar(ev.target.dataset.decForm, { numero, serie, fraccion });
+    if (res.error) return setErr("eDec", res.texto ? res.error : textoError(res.error));
     toast("Décimo asignado"); renderReservas(c); $("#dSer")?.focus();
   });
   $("#decBuscar")?.addEventListener("submit", ev => {
@@ -786,7 +811,7 @@ function renderReservas(c){
   });
   body.querySelectorAll("[data-edit]").forEach(x => x.onclick = ()=>{ editando = x.dataset.edit; confirmando = null; abierto = null; renderReservas(c); $("#eNom")?.focus(); });
   body.querySelectorAll("[data-edit-no]").forEach(x => x.onclick = ()=>{ editando = null; renderReservas(c); });
-  body.querySelector("form[data-edit-form]")?.addEventListener("submit", ev => {
+  body.querySelector("form[data-edit-form]")?.addEventListener("submit", async ev => {
     ev.preventDefault();
     const f = ev.target, id = f.dataset.editForm, r = all.find(y=>y.id===id); if (!r) return;
     const nombre = $("#eNom").value.trim().replace(/\s+/g," ");
@@ -796,10 +821,11 @@ function renderReservas(c){
     const err = !nombre ? "Escribe el nombre." : !tel.ok ? "Revisa el teléfono." : !(n>=1 && n<=500) ? "Indica una cantidad válida de décimos."
       : n < nAsig ? `Esta reserva tiene ${nAsig} décimos asignados. Quita alguno antes de bajar la cantidad.` : "";
     if (err){ setErr("eEdit", err); return; }
-    Store.editar(id, { nombre, telefono: tel.show, telKey: tel.key, relacion: $("#eRelE").value, decimos: n });
+    const res = await Store.editar(id, { nombre, telefono: tel.show, relacion: $("#eRelE").value, decimos: n });
+    if (res.error){ setErr("eEdit", textoError(res.error)); return; }
     editando = null; toast("Reserva " + r.ref + " modificada"); renderReservas(c);
   });
-  body.querySelectorAll("[data-del-si]").forEach(x => x.onclick = ()=>{ Store.eliminar(x.dataset.delSi); confirmando=null; toast("Reserva eliminada"); renderReservas(c); });
+  body.querySelectorAll("[data-del-si]").forEach(x => x.onclick = async ()=>{ const res = await Store.eliminar(x.dataset.delSi); confirmando=null; toast(res.error ? textoError(res.error) : "Reserva eliminada"); renderReservas(c); });
 }
 
 function filaHTML(c, r, porTel, opcionesPartido){
@@ -836,7 +862,7 @@ function filaHTML(c, r, porTel, opcionesPartido){
 function decimosHTML(c, r){
   const a = r.asignados || [];
   const bloqueado = r.estado === "entregada";
-  const lista = a.length ? `<table class="dec"><thead><tr><th>Número</th><th>Serie</th><th>Fracción</th><th></th></tr></thead><tbody>${a.map((d,i)=>`<tr><td class="mono">${esc(d.numero)}</td><td class="mono">${esc(d.serie)}</td><td class="mono">${esc(d.fraccion)}</td><td>${bloqueado?"":`<button class="btn sm ghost" data-dec-quitar="${esc(r.id)}" data-i="${i}" aria-label="Quitar décimo serie ${esc(d.serie)} fracción ${esc(d.fraccion)}">Quitar</button>`}</td></tr>`).join("")}</tbody></table>`
+  const lista = a.length ? `<table class="dec"><thead><tr><th>Número</th><th>Serie</th><th>Fracción</th><th></th></tr></thead><tbody>${a.map((d,i)=>`<tr><td class="mono">${esc(d.numero)}</td><td class="mono">${esc(d.serie)}</td><td class="mono">${esc(d.fraccion)}</td><td>${bloqueado?"":`<button class="btn sm ghost" data-dec-quitar="${esc(r.id)}" data-aid="${esc(d.id)}" aria-label="Quitar décimo serie ${esc(d.serie)} fracción ${esc(d.fraccion)}">Quitar</button>`}</td></tr>`).join("")}</tbody></table>`
     : `<p class="small muted">Aún no hay décimos asignados a esta reserva.</p>`;
   const form = bloqueado
     ? `<p class="small muted">La reserva está entregada, así que los décimos no se pueden cambiar. Si hay que corregir algo, cambia antes su estado.</p>`
@@ -939,11 +965,11 @@ function renderAjustes(c){
     <div><button class="btn primary" type="submit">Guardar ajustes</button></div>
   </form>`;
   $("#aRestaurar").onclick = ()=>{ $("#aPlantilla").value = DEFAULT_CONFIG.plantilla; toast("Mensaje restaurado. Pulsa «Guardar ajustes» para aplicarlo."); };
-  $("#formAjustes").addEventListener("submit", ev => {
+  $("#formAjustes").addEventListener("submit", async ev => {
     ev.preventDefault();
     const v = id => $("#"+id).value.trim();
     const num = v("aNumero").replace(/\D/g,"");
-    Store.saveConfig({
+    const res = await Store.saveConfig({
       numero: num || c.numero,
       maxPorTelefono: Math.max(1, parseInt(v("aMax"),10) || 20),
       fechaLimite: v("aLimite"), plazoTexto: v("aConf"),
@@ -958,7 +984,8 @@ function renderAjustes(c){
       textosRevisados: $("#aRevisado").checked,
       controlDecimos: $("#aCtrlDec").checked
     });
-    toast("Ajustes guardados");
+    toast(res.error ? textoError(res.error) : "Ajustes guardados");
+    renderFooter(); actualizarBarra();
   });
 }
 
@@ -983,16 +1010,20 @@ function renderCierre(c){
       <div class="notice info small"><b>Después del borrado, recordad también:</b>
         <span>borrar las conversaciones de confirmación en el WhatsApp del móvil del club, y cualquier lista en papel o captura de pantalla que se haya hecho para las entregas.</span></div>
     </section>
-    <section class="card"><h2>Solo versión de prueba</h2>
-      <p class="small muted">Vacía todas las reservas de prueba guardadas en este navegador. Los ajustes se mantienen.</p>
-      <div><button class="btn ghost" id="cReset">Vaciar reservas de prueba</button></div>
-    </section>`;
-  $("#cManual").onchange = e => { Store.saveConfig({cierreManual: e.target.checked}); toast(e.target.checked ? "Formulario cerrado" : "Formulario reabierto"); renderCierre(Store.config()); };
-  $("#cBorrar").onclick = ()=>{
+    ${c.textosRevisados ? "" : `<section class="card"><h2>Eliminar reservas de prueba</h2>
+      <p class="small muted">Antes de abrir la campaña, elimina todas las reservas hechas durante las pruebas. Se borran por completo, con sus décimos asignados. Los ajustes se mantienen. Esta opción desaparece cuando marcas los textos como revisados.</p>
+      <div class="field"><label for="cConfirmPrueba">Para eliminarlas, escribe ELIMINAR</label><input type="text" id="cConfirmPrueba" autocomplete="off" style="max-width:240px"></div>
+      <div><button class="btn ghost" id="cReset" ${all.length?"":"disabled"}>Eliminar las ${all.length} reservas</button></div>
+    </section>`}`;
+  $("#cManual").onchange = async e => { const res = await Store.saveConfig({cierreManual: e.target.checked}); toast(res.error ? textoError(res.error) : (e.target.checked ? "Formulario cerrado" : "Formulario reabierto")); renderCierre(Store.config()); };
+  $("#cBorrar").onclick = async ()=>{
     if ($("#cConfirm").value.trim().toUpperCase() !== "BORRAR"){ toast("Escribe BORRAR para confirmar"); $("#cConfirm").focus(); return; }
-    Store.anonimizarTodo(); toast("Datos personales borrados"); renderCierre(Store.config());
+    const res = await Store.anonimizarTodo(); toast(res.error ? textoError(res.error) : "Datos personales borrados"); renderCierre(Store.config());
   };
-  $("#cReset").onclick = ()=>{ Store.reiniciarPrueba(); toast("Reservas de prueba vaciadas"); renderCierre(Store.config()); };
+  $("#cReset")?.addEventListener("click", async ()=>{
+    if ($("#cConfirmPrueba").value.trim().toUpperCase() !== "ELIMINAR"){ toast("Escribe ELIMINAR para confirmar"); $("#cConfirmPrueba").focus(); return; }
+    const res = await Store.vaciarPrueba(); toast(res.error ? textoError(res.error) : "Reservas de prueba eliminadas"); renderCierre(Store.config());
+  });
 }
 
 /* ===================== Pie y enrutado ===================== */
@@ -1003,12 +1034,25 @@ function renderFooter(){
     <span><button class="linkbtn" data-open="privacidad">Política de privacidad</button> · <button class="linkbtn" id="accesoClub">Acceso club</button></span>`;
   $("#accesoClub").onclick = ()=>{ location.hash = "panel"; };
 }
+function actualizarBarra(){ $("#demoBar").hidden = !!Store.config().textosRevisados; }
 function render(){
-  renderFooter();
+  renderFooter(); actualizarBarra();
   if (location.hash === "#panel") renderAdmin(); else renderPublic();
 }
 window.addEventListener("hashchange", ()=>{ window.scrollTo(0,0); render(); });
-render();
+(async function arrancar(){
+  $("#app").innerHTML = `<main class="wrap"><section class="card center muted">Cargando…</section></main>`;
+  try { await Store.cargarConfig(); }
+  catch(e){
+    $("#app").innerHTML = `<main class="wrap"><section class="card center"><h2>No se ha podido cargar</h2><p>Revisa la conexión a internet y recarga la página.</p></section></main>`;
+    return;
+  }
+  try {
+    sesion = await comprobarAdmin();
+    if (sesion) await Store.cargarReservas();
+  } catch(e){ sesion = false; }
+  render();
+})();
 })();
 </script>
 
